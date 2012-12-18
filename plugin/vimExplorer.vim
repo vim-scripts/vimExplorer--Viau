@@ -1,8 +1,8 @@
 " Documentation {{{1
 
 " Name: vimExplorer.vim
-" Version: 1.0
-" Description: Directory and file explorer for vim.
+" Version: 1.1
+" Description: Explore directories quickly and operate on files.
 " Author: Alexandre Viau (alexandreviau@gmail.com)
 " Installation: Copy the plugin to the vim plugin directory.
 "
@@ -24,14 +24,12 @@
 " <leader>VV Start vimExplorer in a new vsplit (vertical) window
 " <leader>VT Start vimExplorer in a new tab
 "
-" The following plugins use "<space>" as as leader key, you may change it by setting the "s:MapLeader" variable to another key.
-"
-" Directory browsing {{{5
+" Directory browsing {{{4
 "
 " <space>l Open the selected directory
 " <space>h Go to the parent directory
 "
-" <space>a Write the path (like an address bar, / or \ may be used)
+" <space>a Go to the path at the top of the buffer to edit it. Press <space>l or <enter> (in normal mode) to go the that path once edited.
 " <space>f Set filter to show only certain files
 " <space>F Remove the filter and show all files
 " <space>L Open the selected directory recursively
@@ -39,9 +37,20 @@
 " <space>p Copy path
 " <space>P Show current path in different formats and to the clipboard
 " <space>x Open directory in external file manager
-" NOTE: You may change the path of the external file manager in the <space>x mapping.
+" NOTE: 1. You may write or edit a path manually in the "Path: " bar at the top of the buffer. Once the path is entered, press <space>l or <enter> to go to that path.
+"       2. You may change the path of the external file manager in the <space>x mapping.
 "
-" Directory bookmarks {{{5
+" Browsing history {{{4
+"
+" <space>l or <enter> Go to one of the history path shown at the top of the buffer, put cursor on one of the paths and execute this mapping. Tip: W or B to move from one path to another in the history. 
+" <space>; Go to the history list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>; to goto the directory.)
+" <space>, Go to the end of the history list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>, to goto the directory.)
+" <space>H Delete the browsing history
+" NOTE: 1. You may edit the history bar at the top of the buffer, you may add, remove or move paths on this line, it will be saved automatically when changing directory or doing <space>s to save the configuration or when vim quits if the cursor is in a vimExplorer window.
+"       2. The maximum length of the history bar may be changed by setting the "s:HistoryMaxLength" variable
+"       3. You may use the "set wrap" command to see all history if the list is long
+"
+" Directory bookmarks {{{4
 "
 " ma to mz Directory marks like similar to marks in vim using the m key but to mark directories instead of positions in files and ' or ` or ; to return to that directory. The maps are automatically activated on a directory listing. For example, press mw to mark the c:\windows directory, then do 'w (or `w or ;w) to return to that directory. All letters may be used from a to z, A to Z and 0 to 9. Press '' to view a list of all the bookmarked directories sorted by mark, or press ;; to view the same list but sorted by paths. When '' or ;; is pressed, the list is shown and a mark is asked as input to goto to its directory, this is another way that marks are used.
 " m0 to m9 Same like ma to mz but using numbers as marks
@@ -50,30 +59,31 @@
 " <space>' Show all marked directories sorted by marks
 " <space>[ Show all marked directories sorted by directories
 "
-" Directory file grep {{{5
+" Directory favorites {{{4
+"
+" <space>b Add the path to the favorites bar
+" <space>B Delete the favorites
+"
+" NOTE: 1. The favorites bar is another way of bookmarking directories. It is independant from the directory bookmarks (marks) showned above. It is a feature on its own.
+"       2. You may edit the favorites bar at the top of the buffer, you may add, remove or move paths on this line, it will be saved automatically when changing directory or doing <space>s to save the configuration or when vim quits if the cursor is in a vimExplorer window.
+"
+" Directory file grep {{{4
+"
 " <space>G Simple grep command to search the files in the current directory and subdirectories. The results are appended at the end of the buffer. After the results are appended, if you want to open a file that appears in the grep results do <space>l on the line where that file is, the file will be opened on a split window at the line number where that grep found the keywords. 
 " NOTE: The UnxUtils grep command dosen't seems to be able to do file filtering when doing a recursive grep, so no "include" will be prompted and all files will be grepped)
 "
-" Directory file search {{{5
+" Directory file search {{{4
+"
 " <space>L  To search files in a directory, open the selected directory recursively using <space>L and then search the buffer for the file using vim's "/" command or use vimgrep.
 "
-" Directory sorting {{{5
+" Directory sorting {{{4
 "
 " <space>1 Sort by name
 " <space>2 Sort by type
 " <space>3 Sort by size
 " <space>4 Sort by date
 "
-" Browsing history {{{5
-"
-" <space>l or <enter> Go to one of the history path shown at the top of the buffer, put cursor on one of the paths and execute this mapping. Tip: W or B to move from one path to another in the history. 
-" <space>; Go to the history list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>g to goto the directory.)
-" <space>, Go to the end of the history list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>g to goto the directory.)
-" <space>H Delete the browsing history
-" NOTE: 1. The maximum length of the history bar may be changed by setting the "s:HistoryMaxLength" variable
-"       2. You may use the "set wrap" command to see all history if the list is long
-"
-" File operations {{{5
+" File operations {{{4
 "
 " <space>d New directory
 " <space>l or <enter> Open file in horizontal split window
@@ -85,18 +95,18 @@
 " <space>R Rename file
 " <space>r Run file
 "
-" Shell operations {{{5
+" Shell operations {{{4
 "
 " <space><esc> Execute a command and insert its output in the buffer
 " <space>C Open directory in shell
 "
-" Configuration file operations {{{5
+" Configuration file operations {{{4
 "
 " <space>o Reload configuration from file (useful if the .config.vim file was edited manually and you want to reload it in the vimExplorer window that is currently opened)
 " <space>s Save configuration file
 " NOTE: The configuration is automatically loaded when vim starts, and it is automatically closed when vim quits.
 "
-" How to get the current path and filename for usage in external scripts {{{5
+" How to get the current path and filename for usage in external scripts {{{4
 "
 " If you want to get the current path and filename from vimExplorer first call the "g:VeGetPath()" then use the following variables as needed.
 " These paths variables may be used for example if you do new mappings or some kind of menu to execute operations on the current file or directory.
@@ -128,7 +138,7 @@
 "   g:VeFullPath2BQ (with filename + quotes)
 "   g:VeFullPath2B2Q (with filename + double quotes)
 "
-" How to open vimExplorer from another script {{{5
+" How to open vimExplorer from another script {{{4
 "
 " Call the function "g:VeDirectoryGoto()" and pass the path as parameter.
 " Example:  cal g:VeDirectoryGoto('/usr/bin') or cal g:VeDirectoryGoto('c:/windows')
@@ -136,21 +146,21 @@
 "
 " Commands: {{{3
 "
-" Open vimExplorer using the last accessed path {{{5
+" Open vimExplorer using the last accessed path {{{4
 "
 " VimExplorerB Start vimExplorer in the current window
 " VimExplorerS Start vimExplorer in a new split (horizontal) window
 " VimExplorerV Start vimExplorer in a new vsplit (vertical) window
 " VimExplorerT Start vimExplorer in a new tab
 "
-" Open vimExplorer using a the current file's path {{{5
+" Open vimExplorer using a the current file's path {{{4
 "
 " VimExplorerBF Start vimExplorer in the current window
 " VimExplorerSF Start vimExplorer in a new split (horizontal) window
 " VimExplorerVF Start vimExplorer in a new vsplit (vertical) window
 " VimExplorerTF Start vimExplorer in a new tab
 
-" Open vimExplorer using a path specified on the command line {{{5
+" Open vimExplorer using a path specified on the command line {{{4
 
 " VimExplorerBP Start vimExplorer in the current window
 " VimExplorerSP Start vimExplorer in a new split (horizontal) window
@@ -163,8 +173,11 @@
 "  - To search files in a directory, open the selected directory recursively using <space>L and then search the buffer for the file using vim's "/" command or use vimgrep.
 "  - I use also the MRU plugin in combination with vimExplorer to have a list of the last opened files, I find it extremely useful for vim editing.
 "  - If you need to do file operations like copy or move files, since these are not implemented in the plugin, vimExplorer to move quickly between directories and then do <space>x to open you file manager or <space>C to open the console, also <space><esc> to run a command. 
+"  - To go quickly to the favorites bar, do <space>; or <space>, which brings the cursor on the history bar, then do "j" to go down one line, then press ";" or "," to go forward and backward on the favorites bar.
+"
 " Todo {{{2
 "
+"   Upload the plugin (comments modified)
 "   test delete file/dir in linux
 "   trouver comment mettre des end-of-line dans substitute est utiliser afin d'avoir des end-of-line dans le fichier .conf.vim j'ai essayer avec \n mais ca fait des @^ dans le fichier et quand je reload le fichier apres l'avoir saver je n'ai pas access a ses info entre autre les bookmark list
 "   The mappings could probably be activated and deactivated using the <buffer> instruction and placed in the AddMaps function. I tried to put one directly there with the <buffer> instruction but it was still activated when I changed window, there is probably another option to set... But one advantage of having the mappings to a dictionnary is to be able to change the leader key for mappings dynamically and even change the mappings dynamically...maybe this could be done too without dictionnary... Different sets of mappings could be loaded/unloaded dynamically using a dictionnary this is another advantage... see later if there is time. Mappings could be also changed individually as a function to add the mappings would do them all at once.
@@ -187,6 +200,16 @@
 " History {{{2
 "
 " 1.0 First release
+"
+" 1.1 Modified the GetFileName() function: when there is very large files with the number of bytes taking much spaces, the filenames may not be aligned, so to find the position of the first filename was not enough, I had to find the position of the filename on the current line, each independently.
+"     Added the favorites bar that offers another way of bookmarking directories other than directory marks.
+"     Corrected the history bar and favorites bar, the links where not executed when <space>l or <enter> were pressed on the "]" character.
+"     Added initialization of the fileName variable to '' in the GetFileName() function
+"     Added possibility to edit the history bar and favorites bar. They will be saved when changing directories or when <space>s is pressed, or when vim quits if the cursor is in a vimExplorer window.
+"     You may now write or edit a path manually in the "Path: " bar at the top of the buffer. Once the path is entered, press <space>l or <enter> to go to that path.
+"     Now use <space>a to go the path at the top of the buffer to edit it. Press <space>l or <enter> (in normal mode) to go the that path once edited.
+"     Modified comments: there was <space>g to execute history paths, now <space>l or <enter>. I modified other comments as well.
+"
 " Variables: Plugin {{{1
 
 " Flag indicating that the plugin is starting for the first time and not already opened and accessed from another window
@@ -206,13 +229,13 @@ let g:VeCfgFile = $home . '/vimExplorer.conf.vim'
 let s:FileNameColNum = 0
 
 " The line number where the directory listing is starting
-let s:DirectoryListLineNum = 7
-
-" The history bar at the top of the buffer
-let s:History = ''
+let s:DirectoryListLineNum = 8
 
 " The maximum lenght for the history bar the top of the buffer
 let s:HistoryMaxLength = 1000
+
+" The maximum lenght for the favorites bar the top of the buffer
+let g:VeFavoritesMaxLength = 1000
 
 " Variables: Paths {{{2
 
@@ -286,7 +309,7 @@ endif
 " Autocommands {{{1
 
 au! VimEnter * cal g:VeLoadFromFile(1)
-au! VimLeave * cal g:VeSaveToFile()
+au! VimLeave * if s:IsPluginWindow() == 1 | cal g:VeSaveBar('History') | cal g:VeSaveBar('Favorites') | endif | cal g:VeSaveToFile() 
 au! TabEnter,WinEnter,BufEnter * cal s:OnEnter()
 au! TabLeave,WinLeave,BufLeave * cal s:OnLeave()
 
@@ -373,12 +396,21 @@ fu! s:OnEnter()
             " Don't check for current path if plugin is opening. OnEnter() is triggered when the window is builded by BuildWindow() and the path should not be copied at this point.
             " These lines of code below allow to use multiple windows of the plugin, getting the "instance" current path by copying the path at the top of the buffer and changing to it when changing from one window to another.
             " Copy path on the top of the plugin window 
-            let tmpReg = @"
-            exe 'norm ggjWy$'
-            let path = @"
-            let @" = tmpReg
+            let savedPosition = getpos(".")
+            " Go to the history bars
+            norm gg
+            " Check if the bar is found
+            let path = ''
+            if search('Path') != 0
+                " Get the line
+                let line = getline(line('.'))
+                " Remove the label from the line
+                let path = substitute(line, 'Path: [', '', '')
+                " Remove "]" at the end
+                let path = strpart(path, 0, len(path) - 1)
+            endif
             " Go back to previous position
-            exe "norm \<c-o>"
+            cal setpos('.', savedPosition)
             " Change to this instance path directory
             cal s:ChangeDirectory(path)
             "}}}
@@ -437,6 +469,10 @@ fu! g:BuildWindow(winType)
     nmap <buffer> <space>' :cal g:VeShowMarks(0)<cr>
     " <space>[ Show all marked directories sorted by directories
     nmap <buffer> <space>[ :cal g:VeShowMarks(1)<cr>
+    " <space>; Go to the history list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>; to goto the directory.)
+    nmap <silent> <buffer> <space>; :exe 'norm gg' \| call search('History') \| exe 'norm f['<cr>
+    " <space>, Go to the end of the history list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>, to goto the directory.)
+    nmap <silent> <buffer> <space>, :exe 'norm gg' \| call search('History') \| exe 'norm $f[' \| norm ,<cr>
     " <space>1 Sort by name
     nmap <silent> <buffer> <space>1 :let g:VeSort = '-U' \| let g:VeSortLabel = 'Name' \| cal g:VeLs()<cr> 
     " <space>2 Sort by type
@@ -445,8 +481,12 @@ fu! g:BuildWindow(winType)
     nmap <silent> <buffer> <space>3 :let g:VeSort = '-S' \| let g:VeSortLabel = 'Size' \| cal g:VeLs()<cr> 
     " <space>4 Sort by date
     nmap <silent> <buffer> <space>4 :let g:VeSort = '-t' \| let g:VeSortLabel = 'Date' \| cal g:VeLs()<cr> 
-    " <space>a Write the path (like an address bar, / or \ may be used)
-    nmap <silent> <buffer> <space>a :cal g:VeGetPath() \| let p = input('Enter a path: ', g:VePath) \| if p != '' \| cal g:VeDirectoryGoto(p) \| endif<cr>
+    " <space>a Go to the path at the top of the buffer to edit it. Press <space>l or <enter> (normal mode) to go the that path once edited.
+    nmap <silent> <buffer> <space>a :exe 'norm gg' \| call search('Path') \| exe 'norm f]h'<cr>
+    " <space>b Add the path to the favorites bar
+    nmap <silent> <buffer> <space>b :cal g:VeAddToBar('favorites', g:VeFavoritesMaxLength) \| cal g:VeLs()<cr>
+    " <space>B Delete the favorites
+    nmap <silent> <buffer> <space>B :cal g:CfgSetItem(g:VeCfg, 'favorites', '') \| :cal g:VeLs()<cr>
     " <space>f Set filter to show only certain files
     nmap <silent> <buffer> <space>f :let g:VeFilter = input('Filter: ', g:VeFilter) \| cal g:VeLs()<cr>
     " <space>F Remove the filter and show all files
@@ -461,10 +501,6 @@ fu! g:BuildWindow(winType)
     endif
     " <space>h Go to the parent directory
     nmap <silent> <buffer> <space>h :cal g:VeDirectoryGoto('..')<cr>
-    " <space>; Go to the history list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>g to goto the directory.)
-    nmap <silent> <buffer> <space>; :exe 'norm gg' \| call search('History') \| exe 'norm f['<cr>
-    " <space>, Go to the end of the history list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>g to goto the directory.)
-    nmap <silent> <buffer> <space>, :exe 'norm gg' \| call search('History') \| exe 'norm $f[' \| norm ,<cr>
     " <space>l Open the selected item
     nmap <silent> <buffer> <space>l :cal g:VeOpenItem(0)<cr>
     " <space>L Open the selected item recursively (only the directory will open recursively, if the item is a file it will be opened like with <leader>l)
@@ -484,7 +520,7 @@ fu! g:BuildWindow(winType)
     " <space>v Open the selected item (in vertical split window)
     nmap <silent> <buffer> <space>v :cal g:VeOpenItem(1)<cr>
     " <space>s Save configuration file
-    nmap <silent> <buffer> <space>s :cal g:VeSaveToFile()<cr>
+    nmap <silent> <buffer> <space>s :cal g:VeSaveBar('History') \| cal g:VeSaveBar('Favorites') \| cal g:VeSaveToFile()<cr>
     " <space>H Delete the browsing history
     nmap <silent> <buffer> <space>H :cal g:CfgSetItem(g:VeCfg, 'history', '') \| :cal g:VeDirectoryGoto(g:VePath)<cr>
 
@@ -553,14 +589,24 @@ fu! s:GetFileName()
     if line('.') < s:DirectoryListLineNum
         return ''
     endif
-    let t = @"
-    let fileNameColNum = str2nr(s:FileNameColNum) - 1
-    exe "norm 0" . fileNameColNum . "ly$"
-    let fileName = @"
-    let @" = t
+    let fileName = ''
+    " Get the line to check for patterns
+    let line = getline(line('.'))
+    let noFilterPattern = '[0-9]\s\w\{3\}\s\(\s\|[0-9]\)[0-9]\s\([0-9][0-9]:[0-9][0-9]\|\s[0-9]\{4\}\)\s\zs.*'
+    let filterPattern = '^.*\/\zs.*$'
+    " No filter used
+    " -rw-r--r-- 1 User None 40960 Dec  7 14:46 vimExplorer.vim
+    " Test from here ------------^ until here -^
+    if line =~ noFilterPattern
+        let fileName = matchstr(line, noFilterPattern)
+    " A filter is used
+    " -rwxr-xr-x 1 User None  536064 Feb  3  2009 C:/Usb/z_white/Apps/Portable/CmdUtils/7z.exe
+    "^----- Test from here until here -------------------------------------------------^
+    elseif  line =~ filterPattern
+        let fileName = matchstr(line, noFilterPattern)
+    endif
     retu fileName
 endfu
-
 
 " s:GetRecursivePath() {{{2
 " Gets the current subdirectory path of a recursive listing that is displayed when the -R option is used 
@@ -679,49 +725,13 @@ fu! g:VeLs()
     " Show the plugin name to identify the window as a vimExplorer window (the name could be shown in the status bar doing split vimExplorer but then a enew after it would remove the name, and without enew only two or more vimExplorer window would display the same content at the same time, being refreshed at the same time)
     cal append(0, 'vimExplorer')
     " Show path at the top of the buffer
-    cal append(1, 'Path: ' . g:VePath)
+    cal append(1, 'Path: [' . g:VePath . ']')
     " Show the history bar
     cal append(2, 'History: ' . g:CfgGetItem(g:VeCfg, 'history'))
+    " Show the favorites bar
+    cal append(3, 'Favorites: ' . g:CfgGetItem(g:VeCfg, 'favorites'))
     " Show the current sort order
-    cal append(3, 'Sorted by: ' . g:VeSortLabel)
-    " Find the column number where the file names start {{{
-    " Get the column position where the file name starts
-    " UnixUtils
-    " -rw-rw-rw-   1 user     group       43420 Nov 14 12:03 calendar.vim
-    " -rw-rw-rw-   1 user     group        1384 Jan 24  2012 getscriptPlugin.vim
-    " Cygwin
-    " -rw-r--r-- 1 User None 40960 Dec  7 14:46 vimExplorer.vim
-    " -rw-r--r-- 1 User None  1969 Sep 14  2011 gzip.vim
-    " Go to first directory or first file
-    exe 'norm gg' . s:DirectoryListLineNum . 'j'
-    " Regex to find the filename column number (searching for .. could work only with unixutils ls, when on root dir c:\ for example, . and .. are not displayed)
-    try
-        " Keep previous search register
-        let tmpReg = @/
-        " When a filter is used, then the file names become full paths, so 2 regex are needed, one to match when there is a filter, and another when there a filter is not used
-        " No filter used
-        " -rw-r--r-- 1 User None 40960 Dec  7 14:46 vimExplorer.vim
-        " Test from here ------------^ until here -^
-        if g:VeFilter == ''
-            let @/ = '[0-9]\s\w\{3\}\s\(\s\|[0-9]\)[0-9]\s\([0-9][0-9]:[0-9][0-9]\|\s[0-9]\{4\}\)\s\zs.*'
-        " A filter is used
-        " -rwxr-xr-x 1 User None  536064 Feb  3  2009 C:/Usb/z_white/Apps/Portable/CmdUtils/7z.exe
-        "^----- Test from here until here -------------------------------------------------^
-        else
-            let @/ = '^.*\/\zs.*$'
-        endif
-        silent norm n
-        " Set back search register
-        let @/ = tmpReg
-    catch
-        " If no files then error, try-catch block is here not to show the error message
-    endtry
-    " The column number where the file name starts
-    let s:FileNameColNum = col('.')
-    " retu to previous position (2 times <c-o>, first time returns to gg position)
-    exe "norm \<c-o>"
-    exe "norm \<c-o>"
-    "}}}
+    cal append(4, 'Sorted by: ' . g:VeSortLabel)
     " Go to first directory or first file
     exe 'norm gg' . s:DirectoryListLineNum . 'j'
     " Find remembered cursor line position in that directory and position the cursor there
@@ -734,23 +744,25 @@ fu! g:VeLs()
     " The color constants are defined in the selected colorscheme.
     " Plugin name
     cal matchadd('Constant', '^vimExplorer$')
-    " Path
-    cal matchadd('Todo', '^Path: \zs.\{-}\ze$')
     " Path label
     cal matchadd('Constant', '^Path:')
     " History label
     cal matchadd('Constant', '^History:')
-    " History paths
-    cal matchadd('htmlLink', '\[\zs.\{-}\ze\]')
+    " Favorites label
+    cal matchadd('Constant', '^Favorites:')
     " Sort order label
     cal matchadd('Constant', '^Sorted by:')
     " Sort order
     cal matchadd('Comment', '^Sorted by: \zs.\{-}\ze$')
     " Directories
     cal matchadd('Directory', '^d.*$')
+    " Grep results
+    cal matchadd('htmlLink', '^.*\/.\{-}:[0-9]\+:\ze.*$')
     " Some files colors
     cal matchadd('Number', '^.\{-}.\(exe\|EXE\)$')
     cal matchadd('Statement', '^.\{-}.\(txt\|TXT\)$')
+    " Links
+    cal matchadd('htmlLink', '\[\zs.\{-}\ze\]')
     "}}}
     " Reinitialize the recursive option
     let g:VeRecursive = ''
@@ -781,16 +793,27 @@ fu! g:VeOpenItem(vSplit)
     elseif line =~ '^.*\/.\{-}:[0-9]\+:.*$'
         let itemType = 'g'
     " Check for a link {{{4
-    " Example of links are the history bar at the top of the buffer, it contains the visited paths each one enclosed in []. These links could be elsewhere.
+    " Example of links are the path bar, history bar or the favorites bar at the top of the buffer, it contains the visited paths each one enclosed in []. These links could be elsewhere.
     " Example: ' [C:/Temp] [C:/vim/vim73/plugin]'
     elseif line =~ '\s\[.\{-}/.\{-}]'
         " Save cursor postion
         let previous = col('.')
-        " Search for start "[" and end "]" of path 
-        call search('[', 'b')
-        let start = col('.')
-        call search(']', '')
-        let end = col('.')
+        " Check if the "[" is the current character {{{5
+        if strpart(line, previous - 1, 1) == '['
+            let start = col('.')
+        else " If it is not the current character, search backwards for "["
+            call search('[', 'b')
+            let start = col('.')
+        endif
+        " Return to previous column (position)
+        exe 'norm ' . previous . '|'
+        " Check if the "]" is the current character {{{5
+        if strpart(line, previous - 1, 1) == ']'
+            let end = col('.')
+        else " If it is not the current character, search forward for "]"
+            call search(']', '')
+            let end = col('.')
+        endif
         " Return to previous column (position)
         exe 'norm ' . previous . '|'
         if start != 0 && end != 0
@@ -855,26 +878,33 @@ fu! g:VeDirectoryGoto(path)
         cal g:CfgSectionSetItem(g:VeCfg, 'cursorPos', g:VePath, fileName)
     endif
     "}}}
+    " Save the bars to the config before to clear the buffer
+    cal g:VeSaveBar('History')
+    cal g:VeSaveBar('Favorites')
     " Change directory
     cal s:ChangeDirectory(a:path)
-    " Add the path to the browsing history {{{
-    " The paths are appended in the reverse order so the newest paths appear first in the list
-    let tmp = '[' . g:VePath . ']' . ' ' . g:CfgGetItem(g:VeCfg, 'history') 
-    " Check if history dosen't become too much long
-    if len(tmp) > s:HistoryMaxLength
-        " If history is more long than max length allowed, then empty it and put the last path inside
-        let history = '[' . g:VePath . ']'
-    else
-        " If history not too long, then add the last path
-        let history = tmp
-    endif
-    "}}}
-    " Add history to configuration dictionnary
-    cal g:CfgSetItem(g:VeCfg, 'history', history)
+    " Add the path to the browsing history
+    cal g:VeAddToBar('history', s:HistoryMaxLength)
     " List the directory
     cal g:VeLs()
 endfu
 
+" g:VeAddToBar() {{{2
+" Add the path to one of the bar at the top of the buffer
+fu! g:VeAddToBar(barName, barMaxLength)
+    " The paths are appended in the reverse order so the newest paths appear first in the list
+    let tmp = '[' . g:VePath . ']' . ' ' . g:CfgGetItem(g:VeCfg, a:barName) 
+    " Check if favorites dosen't become too much long
+    if len(tmp) > a:barMaxLength
+        " If bar is more long than max length allowed, then empty it and put the last path inside
+        let bar = '[' . g:VePath . ']'
+    else
+        " If history not too long, then add the last path
+        let bar = tmp
+    endif
+    " Add bar to configuration dictionnary
+    cal g:CfgSetItem(g:VeCfg, a:barName, bar)
+endfu
 
 " Functions: Directory marks {{{1
 
@@ -922,6 +952,14 @@ fu! g:VeShowMarks(sortByPath)
     endif
 endfu
 
+" Functions: Directory favorites {{{1
+" g:VeFavPath(mark) {{{2
+" Put the current directory in the favorites bar
+fu! g:VeFavPath()
+    cal g:CfgSectionSetItem(g:VeCfg, 'favorites', g:VePath, g:VePath)
+endfu
+
+
 " Functions: Configuration {{{1
 
 " g:VeLoadFromFile() {{{2
@@ -947,6 +985,25 @@ fu! g:VeSaveToFile()
     echo 'Configuration saved to: ' . g:VeCfgFile
 endfu
 
+" g:VeSaveBar(barName) {{{2
+" This function saves the history bar or the favorites bar to the config file. This allows the user to edit these bars and manually (to remove, add or move paths).
+fu! g:VeSaveBar(barName)
+    " Save cursor position
+    let savedPosition = getpos(".")
+    " Go to the history bars
+    norm gg
+    " Check if the bar is found
+    if search(a:barName) != 0
+        " Get the line
+        let line = getline(line('.'))
+        " Remove the barName from the line
+        let bar = substitute(line, a:barName . ': ', '', '')
+        " Add bar to configuration dictionnary
+        cal g:CfgSetItem(g:VeCfg, tolower(a:barName), bar)
+    endif
+    " Go back to previous position
+	cal setpos('.', savedPosition)
+endfu
 " Functions: Configuration Utility: Persistance {{{1
 
 " g:CfgLoadFromFile(file) {{{2
@@ -985,7 +1042,7 @@ fu! g:CfgSaveToFile(cfg, file)
     "let cfg[1] = substitute(cfg[1], ',', '\n\,', 'g')
     "let cfg[1] = substitute(cfg[1], '{', '\n\', 'g')
     " Add comment to the config file
-    let cfg[0] = '" Configuration file used by vim "configFile.vim" plugin. "g:Cfg" is a global dictionary that is used to load and save configurations from files.'
+    let cfg[0] = '" Configuration file used by vim "vimExplorer.vim" plugin. "g:Cfg" is a global dictionary that is used to load and save configurations from files.'
     cal writefile(cfg, file, 'b')
 endfu
 
@@ -1000,6 +1057,7 @@ fu! g:CfgGetItem(dict, itemKey)
         return ''
     endif
 endfu
+
 " g:CfgSetItem(dict, itemKey, itemValue) {{{2
 " Set a value to a item
 fu! g:CfgSetItem(dict, itemKey, itemValue)

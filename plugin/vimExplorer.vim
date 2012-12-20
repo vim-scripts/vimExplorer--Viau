@@ -1,7 +1,7 @@
 " Documentation {{{1
 
 " Name: vimExplorer.vim
-" Version: 1.1
+" Version: 1.2
 " Description: Explore directories quickly and operate on files.
 " Author: Alexandre Viau (alexandreviau@gmail.com)
 " Installation: Copy the plugin to the vim plugin directory.
@@ -106,44 +106,6 @@
 " <space>s Save configuration file
 " NOTE: The configuration is automatically loaded when vim starts, and it is automatically closed when vim quits.
 "
-" How to get the current path and filename for usage in external scripts {{{4
-"
-" If you want to get the current path and filename from vimExplorer first call the "g:VeGetPath()" then use the following variables as needed.
-" These paths variables may be used for example if you do new mappings or some kind of menu to execute operations on the current file or directory.
-" Note that the current path and filename are copied when leaving the plugin window for another window so the following variables could be used from there.
-"
-" Filename
-"   g:VeFileName (filename only without path)
-"   g:VeFileNameQ (filename only without path + quotes)
-"   g:VeFileName2Q (filename only without path + double quotes)
-" Path with / (slash)
-"   g:VePath (without filename)
-"   g:VePathSQ (without filename + quotes)
-"   g:VePathS2Q (without filename + double quotes)
-"   g:VeFullPathS (with filename)
-"   g:VeFullPathSQ (with filename + quotes)
-"   g:VeFullPathS2Q (with filename + double quotes)
-" Path with \ (B = backslash)
-"   g:VePathB (without filename)
-"   g:VePathBQ (without filename + quotes)
-"   g:VePathB2Q (without filename + double quotes)
-"   g:VeFullPathB (with filename)
-"   g:VeFullPathBQ (with filename + quotes)
-"   g:VeFullPathB2Q (with filename + double quotes)
-" Path with \\ (2B = double backslash)
-"   g:VePath2B
-"   g:VePath2BQ = (without filename + quotes)
-"   g:VePath2B2Q = (without filename + double quotes)
-"   g:VeFullPath2B (with filename)
-"   g:VeFullPath2BQ (with filename + quotes)
-"   g:VeFullPath2B2Q (with filename + double quotes)
-"
-" How to open vimExplorer from another script {{{4
-"
-" Call the function "g:VeDirectoryGoto()" and pass the path as parameter.
-" Example:  cal g:VeDirectoryGoto('/usr/bin') or cal g:VeDirectoryGoto('c:/windows')
-" You may have to do a "split", "vsplit" or "tabnew" before calling "g:VeDirectoryGoto()"
-"
 " Commands: {{{3
 "
 " Open vimExplorer using the last accessed path {{{4
@@ -167,6 +129,45 @@
 " VimExplorerVP Start vimExplorer in a new vsplit (vertical) window
 " VimExplorerTP Start vimExplorer in a new tab
 "
+" How to get the current path and filename for usage in external scripts {{{3
+"
+" If you want to get the current path and filename from vimExplorer first call the "g:VeGetPath()" then use the following variables as needed.
+" These paths variables may be used for example if you do new mappings or some kind of menu to execute operations on the current file or directory.
+" Note that the current path and filename are copied when leaving the plugin or any file window for another window so the following variables could be used from there.
+" If you don't want to copy the path when leaving any file window, but just when leaving a vimExplorer window, set the variable "s:GetPathOnLeaveAlways" to 0
+"
+" Filename
+"   g:VeFileName (filename only without path)
+"   g:VeFileNameQ (filename only without path + quotes)
+"   g:VeFileName2Q (filename only without path + double quotes)
+" Path with / (slash)
+"   g:VePathS (without filename)
+"   g:VePathSQ (without filename + quotes)
+"   g:VePathS2Q (without filename + double quotes)
+"   g:VeFullPathS (with filename)
+"   g:VeFullPathSQ (with filename + quotes)
+"   g:VeFullPathS2Q (with filename + double quotes)
+" Path with \ (B = backslash)
+"   g:VePathB (without filename)
+"   g:VePathBQ (without filename + quotes)
+"   g:VePathB2Q (without filename + double quotes)
+"   g:VeFullPathB (with filename)
+"   g:VeFullPathBQ (with filename + quotes)
+"   g:VeFullPathB2Q (with filename + double quotes)
+" Path with \\ (2B = double backslash)
+"   g:VePath2B
+"   g:VePath2BQ = (without filename + quotes)
+"   g:VePath2B2Q = (without filename + double quotes)
+"   g:VeFullPath2B (with filename)
+"   g:VeFullPath2BQ (with filename + quotes)
+"   g:VeFullPath2B2Q (with filename + double quotes)
+"
+" How to open vimExplorer from another script {{{3
+"
+" Call the function "g:VeDirectoryGoto()" and pass the path as parameter.
+" Example:  cal g:VeDirectoryGoto('/usr/bin') or cal g:VeDirectoryGoto('c:/windows')
+" You may have to do a "split", "vsplit" or "tabnew" before calling "g:VeDirectoryGoto()"
+"
 " Tips {{{2
 "
 "  - You may use the "set wrap" command to see all history if the list is long.
@@ -174,6 +175,7 @@
 "  - I use also the MRU plugin in combination with vimExplorer to have a list of the last opened files, I find it extremely useful for vim editing.
 "  - If you need to do file operations like copy or move files, since these are not implemented in the plugin, vimExplorer to move quickly between directories and then do <space>x to open you file manager or <space>C to open the console, also <space><esc> to run a command. 
 "  - To go quickly to the favorites bar, do <space>; or <space>, which brings the cursor on the history bar, then do "j" to go down one line, then press ";" or "," to go forward and backward on the favorites bar.
+"  - You may search the history and favorites using the "/" or the "?" command, especially the "?" command as the links are at the top of the file.
 "
 " Todo {{{2
 "
@@ -193,9 +195,10 @@
 "   1. le config file a ete overwrite pour une raison que j'ignore... a surveiller
 "   2. ne fonctionne pas dans cygwin console et xconsole
 "   3. On dirait qu'il a sauvegarder des endroit qui ne sont pas des lignes du listing comme emplacement de repertoire...voir si c'est pas des anciennes donnees
-    " exemple
-    " 'C:/Documents and Settings': 'otal 0'
-    " 4. Le config file n'est pas loader pour une raison que j'ignore...
+"   exemple
+"   'C:/Documents and Settings': 'otal 0'
+"   4. Le config file n'est pas loader pour une raison que j'ignore...
+"   Added multilines in the configuration file. Note for some reasons I don't know yet, the end-of-line characters appear like this in the file ^M^@ (in windows, in linux it should be ^@) which is all on the same line when opened in vim. If the file is opened for example in wordpad, it appears with multiple lines. I have to check this out again.
 "
 " History {{{2
 "
@@ -209,7 +212,13 @@
 "     You may now write or edit a path manually in the "Path: " bar at the top of the buffer. Once the path is entered, press <space>l or <enter> to go to that path.
 "     Now use <space>a to go the path at the top of the buffer to edit it. Press <space>l or <enter> (in normal mode) to go the that path once edited.
 "     Modified comments: there was <space>g to execute history paths, now <space>l or <enter>. I modified other comments as well.
-"
+" 1.2 Added <space>e (edit) to open files in current buffer.
+"     Changed commands VimExplorerB, VimExplorerBF, VimExplorerBP for VimExplorerE, VimExplorerEF, VimExplorerEP 
+"     Changed mappings \vb and \VB for \vb and \VE so it is similar to the <space>e command, to keep consistance between mappings.
+"     Added very large max length for favorites not to autodelete them if there are too many like with the history bar.
+"     Added the possibility to call g:VeGetPath() from any file, not just from a vimExplorer window, to get the multiple path formats to global variables. This allows for example to switch to another window where there would be a menu of links that contains the path variables in commands. One example could be that a code file is in edition, once saved, switch to menu window and execute the commands from the links. If you don't want to get the paths when leaving any files, set the "s:GetPathOnLeaveAlways" variable to 0
+"     Modified comments
+
 " Variables: Plugin {{{1
 
 " Flag indicating that the plugin is starting for the first time and not already opened and accessed from another window
@@ -235,7 +244,11 @@ let s:DirectoryListLineNum = 8
 let s:HistoryMaxLength = 1000
 
 " The maximum lenght for the favorites bar the top of the buffer
-let g:VeFavoritesMaxLength = 1000
+let g:VeFavoritesMaxLength = 9999999
+
+" Get the multiple path formats of the current file to global variables when leaving any file including the vimExplorer selected file. This is done by calling the g:VeGetPath() function
+" If set to 0, then the path formats will be copied only when leaving a vimExplorer window
+let s:GetPathOnLeaveAlways = 1
 
 " Variables: Paths {{{2
 
@@ -245,7 +258,7 @@ let g:VeFileName = ''
 let g:VeFileNameQ = '' " (with quotes)
 let g:VeFileName2Q = '' " (with quotes)
 " Path with /
-" No g:VePathS because g:VePath is already with "/"
+let g:VePathS = '' " (without filename)
 let g:VePathSQ = '' " (without filename + quotes)
 let g:VePathS2Q = '' " (without filename + double quotes)
 let g:VeFullPathS = '' " (with filename)
@@ -318,7 +331,7 @@ au! TabLeave,WinLeave,BufLeave * cal s:OnLeave()
 " Open vimExplorer using the last accessed path {{{2
 
 " Create the window in the current window
-map <silent> <leader>vb :VimExplorerB<cr>
+map <silent> <leader>ve :VimExplorerE<cr>
 " Create the window in a new split (horizontal) window
 map <silent> <leader>vs :VimExplorerS<cr>
 " Create the window in a new vsplit (vertical) window
@@ -329,7 +342,7 @@ map <silent> <leader>vt :VimExplorerT<cr>
 " Open vimExplorer using a the current file's path {{{2
 
 " Create the window in the current window
-map <silent> <leader>VB :VimExplorerBF<cr>
+map <silent> <leader>VE :VimExplorerEF<cr>
 " Create the window in a new split (horizontal) window
 map <silent> <leader>VS :VimExplorerSF<cr>
 " Create the window in a new vsplit (vertical) window
@@ -342,7 +355,7 @@ map <silent> <leader>VT :VimExplorerTF<cr>
 " Open vimExplorer using the last accessed path {{{2
 
 " Create the window in the current window
-command! -nargs=0 VimExplorerB let g:VeOpening = 1 | cal g:BuildWindow('b') | cal g:VeDirectoryGoto(g:VePath) | let g:VeOpening = 0
+command! -nargs=0 VimExplorerE let g:VeOpening = 1 | cal g:BuildWindow('e') | cal g:VeDirectoryGoto(g:VePath) | let g:VeOpening = 0
 " Create the window in a new split (horizontal) window
 command! -nargs=0 VimExplorerS let g:VeOpening = 1 | cal g:BuildWindow('s') | cal g:VeDirectoryGoto(g:VePath) | let g:VeOpening = 0
 " Create the window in a new vsplit (vertical) window
@@ -353,7 +366,7 @@ command! -nargs=0 VimExplorerT let g:VeOpening = 1 | cal g:BuildWindow('t') | ca
 " Open vimExplorer using a the current file's path {{{2
 
 " Create the window in the current window
-command! -nargs=0 VimExplorerBF let g:VeOpening = 1 | let p = expand('%:p:h') | cal g:BuildWindow('b') | cal g:VeDirectoryGoto(p) | let g:VeOpening = 0
+command! -nargs=0 VimExplorerEF let g:VeOpening = 1 | let p = expand('%:p:h') | cal g:BuildWindow('e') | cal g:VeDirectoryGoto(p) | let g:VeOpening = 0
 " Create the window in a new split (horizontal) window
 command! -nargs=0 VimExplorerSF let g:VeOpening = 1 | let p = expand('%:p:h') | cal g:BuildWindow('s') | cal g:VeDirectoryGoto(p) | let g:VeOpening = 0
 " Create the window in a new vsplit (vertical) window
@@ -364,7 +377,7 @@ command! -nargs=0 VimExplorerTF let g:VeOpening = 1 | let p = expand('%:p:h') | 
 " Open vimExplorer using a path specified on the command line {{{2
 
 " Create the window in the current window
-command! -nargs=1 VimExplorerBP let g:VeOpening = 1 | cal g:BuildWindow('b') | cal g:VeDirectoryGoto(<f-args>) | let g:VeOpening = 0
+command! -nargs=1 VimExplorerEP let g:VeOpening = 1 | cal g:BuildWindow('e') | cal g:VeDirectoryGoto(<f-args>) | let g:VeOpening = 0
 " Create the window in a new split (horizontal) window
 command! -nargs=1 VimExplorerSP let g:VeOpening = 1 | cal g:BuildWindow('s') | cal g:VeDirectoryGoto(<f-args>) | let g:VeOpening = 0
 " Create the window in a new vsplit (vertical) window
@@ -421,9 +434,12 @@ endfu
 
 " OnLeave() {{{2
 fu! s:OnLeave()
-    " The window is a vimExplorer window
-    if s:IsPluginWindow() == 1
-        " Keep a copy of the current path and filename variables to use from another window
+    
+    " Keep a copy of the current path and filename variables to use from another window, even if the current window is not a vimExplorer window. {{{3
+    " This allows for example to switch to another window where there would be a menu of links that contains the path variables in commands.
+    " One example could be that a code file is in edition, once saved, switch to menu window and execute the commands from the links.
+    " If you don't want to get the paths when leaving any files, set the "s:GetPathOnLeaveAlways" variable to 0
+    if s:GetPathOnLeaveAlways == 1 || s:IsPluginWindow() == 1
         cal g:VeGetPath()
     endif
 endfu
@@ -431,7 +447,7 @@ endfu
 " BuildWindow() (window creation, options and mappings) {{{2
 fu! g:BuildWindow(winType)
     " Create the window in the current window {{{3
-    if a:winType == 'b'
+    if a:winType == 'e'
         enew
     " Create the window in a new split (horizontal) window
     elseif a:winType == 's'
@@ -487,6 +503,8 @@ fu! g:BuildWindow(winType)
     nmap <silent> <buffer> <space>b :cal g:VeAddToBar('favorites', g:VeFavoritesMaxLength) \| cal g:VeLs()<cr>
     " <space>B Delete the favorites
     nmap <silent> <buffer> <space>B :cal g:CfgSetItem(g:VeCfg, 'favorites', '') \| :cal g:VeLs()<cr>
+    " <space>e Open file in new buffer
+    nmap <silent> <buffer> <space>e :cal g:VeGetPath() \| exe 'e ' . g:VeFullPathS<cr>
     " <space>f Set filter to show only certain files
     nmap <silent> <buffer> <space>f :let g:VeFilter = input('Filter: ', g:VeFilter) \| cal g:VeLs()<cr>
     " <space>F Remove the filter and show all files
@@ -662,28 +680,39 @@ endfu
 
 " g:VeGetPath() {{{2
 " To get the paths for external use
+" If may be called to get path formats from a file in edition as well
 fu! g:VeGetPath()
-	" Attempt to get the current subdirectory path of a recursive listing that is displayed when the -R option is used 
-    let path = s:GetRecursivePath()
-    " If a path is found
-    if path != ''
-        " Set g:VePath to the current subdirectory path of the recursive listing
-        let g:VePath = path
-    endif
-    " If root path in windows example c:/, then remove trailing slash, other paths don't have trailing slashes
-    if has("Win32") && len(g:VePath) == 3
-        let path = strpart(g:VePath, 0, 2)
+    " If the window is a vimExplorer window {{{3
+    " Get the path from the directory listing information
+    if s:IsPluginWindow() == 1
+        " Attempt to get the current subdirectory path of a recursive listing that is displayed when the -R option is used 
+        let path = s:GetRecursivePath()
+        " If a path is found
+        if path != ''
+            " Set g:VePath to the current subdirectory path of the recursive listing
+            let g:VePath = path
+        endif
+        " If root path in windows example c:/, then remove trailing slash, other paths don't have trailing slashes
+        if has("Win32") && len(g:VePath) == 3
+            let path = strpart(g:VePath, 0, 2)
+        else
+            let path = g:VePath
+        endif
+        let g:VeFileName = s:GetFileName()
+    " If the window is not a vimExplorer window (like a file in edition for example) {{{3
     else
-        let path = g:VePath
+        " Get the path and filename for the current file
+        let path = substitute(expand("%:p:h"), '\', '/', 'g')
+        let g:VeFileName = expand("%:t")
     endif
-    let g:VeFileName = s:GetFileName()
+    " Get the multiple path formats for the selected path to global variables for external use {{{3
     let g:VeFileNameQ = "'" . g:VeFileName . "'"
     let g:VeFileName2Q = '"' . g:VeFileName . '"'
     " With /
-    " No g:VePathS because g:VePath is already with "/"
-    let g:VePathSQ = "'" . g:VePath . "'"
-    let g:VePathS2Q = '"' . g:VePath . '"'
-    let g:VeFullPathS = g:VePath . '/' . g:VeFileName
+    let g:VePathS = path
+    let g:VePathSQ = "'" . path . "'"
+    let g:VePathS2Q = '"' . path . '"'
+    let g:VeFullPathS = path . '/' . g:VeFileName
     let g:VeFullPathSQ = "'" . g:VeFullPathS . "'"
     let g:VeFullPathS2Q = '"' . g:VeFullPathS . '"'
     " With \
@@ -696,8 +725,8 @@ fu! g:VeGetPath()
     " With \\
     let g:VePath2B = substitute(path, '/', '\', 'g')
     let g:VePath2B = substitute(g:VePath2B, '\', '\\\\', 'g')
-    let g:VePath2BQ = "'" . g:VePathB . "'"
-    let g:VePath2B2Q = '"' . g:VePathB . '"'
+    let g:VePath2BQ = "'" . g:VePath2B . "'"
+    let g:VePath2B2Q = '"' . g:VePath2B . '"'
     let g:VeFullPath2B = g:VePath2B . '\\' . g:VeFileName
     let g:VeFullPath2BQ = "'" . g:VeFullPath2B . "'"
     let g:VeFullPath2B2Q = '"' . g:VeFullPath2B . '"'
@@ -1037,10 +1066,6 @@ fu! g:CfgSaveToFile(cfg, file)
     let cfg = readfile(file)
     " Add the global g:Cfg variable name
     let cfg[1] =  'let g:Cfg = ' . cfg[1]
-    " Make the config file multiline
-    " NOTE: \n dosen't seem to work, when the file is reloaded the data is not accessible from the dictionnary
-    "let cfg[1] = substitute(cfg[1], ',', '\n\,', 'g')
-    "let cfg[1] = substitute(cfg[1], '{', '\n\', 'g')
     " Add comment to the config file
     let cfg[0] = '" Configuration file used by vim "vimExplorer.vim" plugin. "g:Cfg" is a global dictionary that is used to load and save configurations from files.'
     cal writefile(cfg, file, 'b')

@@ -1,7 +1,7 @@
 " Documentation {{{1
 
 " Name: vimExplorer.vim
-" Version: 1.2
+" Version: 1.3
 " Description: Explore directories quickly and operate on files.
 " Author: Alexandre Viau (alexandreviau@gmail.com)
 " Installation: Copy the plugin to the vim plugin directory.
@@ -12,14 +12,14 @@
 "
 " Open vimExplorer using the last accessed path {{{4
 
-" <leader>vb Start vimExplorer in the current window
+" <leader>ve Start vimExplorer in the current window
 " <leader>vs Start vimExplorer in a new split (horizontal) window
 " <leader>vv Start vimExplorer in a new vsplit (vertical) window
 " <leader>vt Start vimExplorer in a new tab
 
 " Open vimExplorer using a the current file's path {{{4
 
-" <leader>VB Start vimExplorer in the current window
+" <leader>VE Start vimExplorer in the current window
 " <leader>VS Start vimExplorer in a new split (horizontal) window
 " <leader>VV Start vimExplorer in a new vsplit (vertical) window
 " <leader>VT Start vimExplorer in a new tab
@@ -189,6 +189,7 @@
 "   mettre le save config sur cursorHold autoevent 
 "   continue commands to open in vsplit, new tab etc j'ai fait des type de window dans buildwindow() faire des commandes correspondantes sans trop dupliquer de code si possible
 "   concernant ce qui suit a propos des tags...peut-etre pas le faire, les operations de copie se font mieux en windows et ca vaudrait pas la peine...c'est pas un file manager mais pour editer des fichiers...peut-etre ajouter <space>t pour tagger les fichier, ajouter les fichiers tagges dans un dictionnaire (dans le g:VeCfg) dans un section "taggedFiles". lorsqu'un fichier est tagge, appender un "*" apres le filename, et ajouter un highlight dans setcolor() pour highlighte les lignes qui se termine par "*". Le fullpath serait la cle de l'item de dictionnaire et le filename la value. avec ces deux si une commande demande un full path on l'aura et si une autre command demande seulement le filename (comme dans la command grep) on l'aura aussi. faire une fonction qui update la liste des fichier et ajoute les asterisque "*" apres les filename (avec un loop des values du dictionnaire et search replace les filename du buffer) et ajout le highligh (appelle setcolor()) utiliser pour grep, move et copy
+"   ajouter une bar de favorites de files en plus des favorites de dossiers? est-ce necessaire puisque j'ai MRU? et si c'est un exe, sera-t-il rouler ou ouvert dans vim?.... a considerer l'utilite...
 "
 " Bugs {{{2
 "
@@ -214,11 +215,13 @@
 "     Modified comments: there was <space>g to execute history paths, now <space>l or <enter>. I modified other comments as well.
 " 1.2 Added <space>e (edit) to open files in current buffer.
 "     Changed commands VimExplorerB, VimExplorerBF, VimExplorerBP for VimExplorerE, VimExplorerEF, VimExplorerEP 
-"     Changed mappings \vb and \VB for \vb and \VE so it is similar to the <space>e command, to keep consistance between mappings.
+"     Changed mappings \vb and \VB for \ve and \VE so it is similar to the <space>e command, to keep consistance between mappings.
 "     Added very large max length for favorites not to autodelete them if there are too many like with the history bar.
 "     Added the possibility to call g:VeGetPath() from any file, not just from a vimExplorer window, to get the multiple path formats to global variables. This allows for example to switch to another window where there would be a menu of links that contains the path variables in commands. One example could be that a code file is in edition, once saved, switch to menu window and execute the commands from the links. If you don't want to get the paths when leaving any files, set the "s:GetPathOnLeaveAlways" variable to 0
 "     Modified comments
-
+" 1.3 Added folds in GetFileName(), VeLs()
+"     Modified comments, the \vb and \VB mappings where still in the documentation but they was replaced by \ve and \VE.
+"
 " Variables: Plugin {{{1
 
 " Flag indicating that the plugin is starting for the first time and not already opened and accessed from another window
@@ -608,16 +611,16 @@ fu! s:GetFileName()
         return ''
     endif
     let fileName = ''
-    " Get the line to check for patterns
+    " Get the line to check for patterns {{{3
     let line = getline(line('.'))
     let noFilterPattern = '[0-9]\s\w\{3\}\s\(\s\|[0-9]\)[0-9]\s\([0-9][0-9]:[0-9][0-9]\|\s[0-9]\{4\}\)\s\zs.*'
     let filterPattern = '^.*\/\zs.*$'
-    " No filter used
+    " No filter used {{{3
     " -rw-r--r-- 1 User None 40960 Dec  7 14:46 vimExplorer.vim
     " Test from here ------------^ until here -^
     if line =~ noFilterPattern
         let fileName = matchstr(line, noFilterPattern)
-    " A filter is used
+    " A filter is used {{{3
     " -rwxr-xr-x 1 User None  536064 Feb  3  2009 C:/Usb/z_white/Apps/Portable/CmdUtils/7z.exe
     "^----- Test from here until here -------------------------------------------------^
     elseif  line =~ filterPattern
@@ -735,9 +738,9 @@ endfu
 " g:VeLs() {{{2
 " List the directory
 fu! g:VeLs() 
-    " Clear buffer
+    " Clear buffer {{{3
     norm ggVGd
-    " List the directory
+    " List the directory {{{3
     " If not root path c:\ or another root, add quotes. Root path quoted ("c:\") will give an error. 
     " Or if there is a filter, then don't put quotes, quotes don't work in a filter
     if (has("Win32") && len(g:VePath) == 3) || g:VeFilter != ''
@@ -751,6 +754,7 @@ fu! g:VeLs()
         " Don't use g:VePathS2Q here because the paths in g:VeGetPath() are not updated at this point, the listing as to be completed first because the function attempts to get the recursive paths is any
         exe 'r! ' . s:LsCmdPath . ' -al ' . g:VeSort . ' ' . g:VeRecursive . ' "' . g:VePath . '"'
     endif
+    " Add items at the top of the buffer {{{3
     " Show the plugin name to identify the window as a vimExplorer window (the name could be shown in the status bar doing split vimExplorer but then a enew after it would remove the name, and without enew only two or more vimExplorer window would display the same content at the same time, being refreshed at the same time)
     cal append(0, 'vimExplorer')
     " Show path at the top of the buffer
@@ -763,13 +767,13 @@ fu! g:VeLs()
     cal append(4, 'Sorted by: ' . g:VeSortLabel)
     " Go to first directory or first file
     exe 'norm gg' . s:DirectoryListLineNum . 'j'
-    " Find remembered cursor line position in that directory and position the cursor there
+    " Find remembered cursor line position in that directory and position the cursor there {{{3
     let fileName = g:CfgSectionGetItem(g:VeCfg, 'cursorPos', g:VePath)
     if fileName != ''
         cal search('\s' . fileName . '$')
         normal l
     endif
-    " Set colors on specific items in the window {{{
+    " Set colors on specific items in the window {{{3
     " The color constants are defined in the selected colorscheme.
     " Plugin name
     cal matchadd('Constant', '^vimExplorer$')
@@ -792,10 +796,9 @@ fu! g:VeLs()
     cal matchadd('Statement', '^.\{-}.\(txt\|TXT\)$')
     " Links
     cal matchadd('htmlLink', '\[\zs.\{-}\ze\]')
-    "}}}
-    " Reinitialize the recursive option
+    " Reinitialize the recursive option {{{3
     let g:VeRecursive = ''
-    " Append debug info at the end of buffer
+    " Append debug info at the end of buffer {{{3
     cal append(line('$'), g:Debug)
 endfu
 

@@ -410,10 +410,16 @@ endfunction
 " Documentation {{{1
 
 " Name: vimExplorer.vim
-" Version: 2.0
+" Version: 2.1
 " Description: Explore directories quickly and operate on files.
 " Author: Alexandre Viau (alexandreviau@gmail.com)
-" Installation: Copy the plugin to the vim plugin directory.
+"
+" Installation {{{2
+"
+" Copy the plugin to the vim plugin directory. 
+" If you use the plugin in Windows, you will have to change the value of the "g:VeLsCmdPath" to that of the path where your ls command is located. Search for the variable using: /let g:VeLsCmdPath (You may also set that variable to 'ls' simply and set the path to the executable using the system %path% variable)
+" There are mappings (<space>9 and <space>0) to switch between the ls command from "UnxUtils" or the ls command from "Cygwin". So you may use both like I do by setting a path for each of these variables "g:VeLsCmdPathU" and "g:VeLsCmdPathC". I personally use the ls command from "UnxUtils" for speed, and the ls command from "Cygwin" to display russian alphabet. I use these mappings to switch from one to another depending if I need they are file and directory names that are written with the russian alphabet.
+" If you use the plugin in Windows, you will have to change also the value of the "g:VeGrepCmdPath" to that of the path where your grep command is located. Search for the variable using: /let g:VeGrepCmdPath (You may also set that variable to 'grep' simply and set the path to the executable using the system %path% variable)
 "
 " Usage {{{2
 "
@@ -461,6 +467,8 @@ endfunction
 " <space>x Open directory in external file manager
 " <space>X Open current directory with the gvim "browse" command to open a file in the current buffer
 " <space>z Return to last path visited (toggle current and last)
+" <space>9 If Windows is used to change the ls command for "UnxUtils" ls command
+" <space>0 If Windows is used to Change the ls command for "Cygwin" ls command
 " NOTE: 1. You may write or edit a path manually in the "Path: " bar at the top of the buffer. Once the path is entered, press <space>l or <enter> to go to that path.
 "       2. You may change the path of the external file manager in the <space>x mapping.
 "       3. Some file operations mappings work with the directories as well for example: <space>t to open in new tab, <space>x to open in external filemanager (check the "File operations" below)
@@ -630,11 +638,12 @@ endfunction
 " Example:  cal g:VeDirectoryGoto('/usr/bin') or cal g:VeDirectoryGoto('c:/windows')
 " You may have to do a "split", "vsplit" or "tabnew" before calling "g:VeDirectoryGoto()"
 "
-" How to change the colors of the display
+" How to change the colors of the display {{{3
 "
 " Find the g:VeLs() function in the code and then find the comment section "Set colors on specific items in the window", there you'll find the highlight groups set as the first arguments of the matchadd() function. For example where there is "cal matchadd('htmlLink', '\[\zs.\{-}\ze\]')" you may change "htmlLink" for some other highlight group of you choice.
 "
 " How to run user-defined commands on selected files {{{3
+"
 " This is useful if you want to command in batch on all the selected files.
 " Use the "ctrl-s" mapping with or without visual selection to select files.
 " The command placed in "Step1" contains commands that are run on files, the command placed in "Step2" contains commands that are run on directories.
@@ -654,7 +663,7 @@ endfunction
 " let g:VeCommands.User.Step1.Command.Value = 'cal system("ren \"%SelFileName%\" \"%SelFileName%.txt\"")'
 " " Rename directories (Step2) (append '_bkp' to selected directories) (In Windows use "!ren", in Linux "!mv")
 " let g:VeCommands.User.Step2.Command.Value = 'cal system("ren \"%SelFileName%\" \"%SelFileName%_bkp\"")'
-
+"
 " Tips {{{2
 "
 "  - You may use the "set wrap" command to see all history if the list is long.
@@ -725,6 +734,15 @@ endfunction
 "     Added mappings to inspect the content of the selected files object, the commands object and the command to run object
 "     Added operations on selected files in a recursive listing also (ls -R) Copy, move, delete, OpenInNewTab etc
 "     Added selection of items in the links bar
+" 2.1 Added "silent" to the <space>x mappings
+"     Corrected bug in the s:SetCursorPos(path) (to exit if there are no path)
+"     Did testing when there are no VimExplorer.xml file
+"     Change suggested mappings (commented out) (f2, f3, ..., Home, PageUp, etc)
+"     Modified the installation instructions to indicated that if you use the plugin in Windows, you will have to change the value of the "g:VeLsCmdPath" to that of the path where your ls command is located. Search for the variable using: /let g:VeLsCmdPath
+"     Added <space>9 If Windows is used to change the ls command for "UnxUtils" ls command
+"     Added <space>0 If Windows is used to Change the ls command for "Cygwin" ls command
+"     Modified also the installation instructions to indicated that if you use the plugin in Windows, you will have to change also the value of the "g:VeGrepCmdPath" to that of the path where your grep command is located. Search for the variable using: /let g:VeGrepCmdPath (You may also set that variable to 'grep' simply and set the path to the executable using the system %path% variable)
+"     Change the regex so that the cursor position is remembered also when there is a filter: changed "cal search('\([0-9]\s\+\|\/\)\zs\s\+' . g:VeCfg.CursorPos[g:VePath].Value . '$')" to "cal search('[0-9]\zs\s\+' . g:VeCfg.CursorPos[g:VePath].Value . '$')"
 "
 " Variables: Plugin {{{1
 
@@ -737,7 +755,8 @@ let g:Debug = []
 " Variables: Configuration {{{1
 
 let g:VeCfgFile = $HOME . '/vimExplorer.xml'
-" The declaration of the variable 'g:VeCfg' is in the g:VeLoadFromFile() function, this is to avoid to erase its content when developing and sourcing (so %) this file.
+
+" The declaration of the variable 'g:VeCfg' (in development) is in the g:VeLoadFromFile() function, this is to avoid to erase its content when sourcing (so %) this file.
 
 " Variables: Directory browsing {{{1
 
@@ -785,15 +804,18 @@ let g:VeRecursive = ''
 let g:VeRecursiveData = []
 
 " Windows
+" NOTE: There are mappings (<space>9 and <space>0) to switch between the ls command from "UnxUtils" or the ls command from "Cygwin". So you may use both like I do by setting a path for each of these variables "g:VeLsCmdPathU" and "g:VeLsCmdPathC". I personally use the ls command from "UnxUtils" for speed, and the ls command from "Cygwin" to display russian alphabet. I use these mappings to switch from one to another depending if I need they are file and directory names that are written with the russian alphabet.
 if has('Win32')
+    " UnixUtils ls command path (The version I tested dosen't show Windows7 links as links but shows them as regular directories, and it produce an error when changing to it and produces errors if russian directory name. It seems also more faster than cygwin ls but cygwin ls displays everything correctly including russian alphabet but is much slower in Windows.) 
+    let g:VeLsCmdPathU = 'C:\Usb\z_white\Apps\Portable\CmdUtils\ls.exe'
     " Cygwin ls command
-    "let s:LsCmdPath = 'c:\cygwin\bin\ls.exe'
-    " UnixUtils ls command path (The version I tested dosen't show Windows7 links as links but shows them as regular directories, and it produce an error when changing to it and produces errors if russian directory name. It seems also more faster than cygwin ls but cygwin ls displays everything correctly.) 
-    let s:LsCmdPath = 'C:\Usb\z_white\Apps\Portable\CmdUtils\ls.exe'
+    let g:VeLsCmdPathC = 'c:\cygwin\bin\ls.exe'
+    " ls command (default is UnxUtils because it is faster)
+    let g:VeLsCmdPath = g:VeLsCmdPathU
 " Linux
 else
     " ls command
-    let s:LsCmdPath = 'ls'
+    let g:VeLsCmdPath = 'ls'
 endif
 
 " Variables: Directory grep {{{1 
@@ -826,8 +848,6 @@ let s:ShowLastCommands = 0
 
 au! VimEnter * cal g:VeLoadFromFile(1)
 au! VimLeave * if s:IsPluginWindow() == 1 | cal g:VeSaveBar('History') | cal g:VeSaveBar('Favorites') | endif | cal g:VeSaveToFile() 
-"au! TabEnter,WinEnter,BufEnter * cal s:OnEnter()
-"au! TabLeave,WinLeave,BufLeave * cal s:OnLeave()
 au! WinEnter * cal s:OnEnter()
 au! WinLeave * cal s:OnLeave()
 
@@ -858,10 +878,11 @@ nmap <silent> <leader>vx :exe 'VimExplorerT' \| exe 'VimExplorerV' \| exe 'VimEx
 " nmap <f3> :VimExplorerT<cr>
 " nmap <f4> :VimExplorerS<cr>
 " nmap <f5> :VimExplorerV<cr>
-" nmap <home> :VimExplorerT<cr>
-" nmap <PageUp> :exe 'VimExplorerT' \| exe 'VimExplorerV'<cr>
-" nmap <PageDown> :exe 'VimExplorerT' \| exe 'VimExplorerV' \| exe 'VimExplorerS' \| wincmd l \| exe 'VimExplorerS'<cr>
-" nmap <End> :exe 'VimExplorerT' \| exe 'VimExplorerV' \| exe 'VimExplorerS' \| exe 'VimExplorerS' \| wincmd l \| exe 'VimExplorerS' \| exe 'VimExplorerS'<cr>
+" nmap <home> :VimExplorerE<cr>
+" nmap <PageUp> :VimExplorerT<cr>
+" nmap <PageDown> :exe 'VimExplorerT' \| exe 'VimExplorerV'<cr>
+" nmap <End> :exe 'VimExplorerT' \| exe 'VimExplorerV' \| exe 'VimExplorerS' \| wincmd l \| exe 'VimExplorerS'<cr>
+" nmap <s-home> :exe 'VimExplorerT' \| exe 'VimExplorerV' \| exe 'VimExplorerS' \| exe 'VimExplorerS' \| wincmd l \| exe 'VimExplorerS' \| exe 'VimExplorerS'<cr>
 
 " Open vimExplorer using a the current file's path {{{2
 
@@ -879,9 +900,9 @@ nmap <silent> <leader>VT :VimExplorerTF<cr>
 " Open vimExplorer using the last accessed path {{{2
 
 " Create the window in the current window
-command! -nargs=0 VimExplorerE let g:VeOpening = 1 | cal g:BuildWindow('e') | cal g:VeGetPath() | cal g:VeDirectoryGoto(g:VeCfg.LastPath.Value) | let g:VeOpening = 0
+command! -nargs=0 VimExplorerE :let g:VeOpening = 1 | cal g:BuildWindow('e') | cal g:VeGetPath() | cal g:VeDirectoryGoto(g:VeCfg.LastPath.Value) | let g:VeOpening = 0
 " Create the window in a new split (horizontal) window
-command! -nargs=0 VimExplorerS let g:VeOpening = 1 | cal g:BuildWindow('s') | cal g:VeGetPath() | cal g:VeDirectoryGoto(g:VeCfg.LastPath.Value) | let g:VeOpening = 0
+command! -nargs=0 VimExplorerS :let g:VeOpening = 1 | cal g:BuildWindow('s') | cal g:VeGetPath() | cal g:VeDirectoryGoto(g:VeCfg.LastPath.Value) | let g:VeOpening = 0
 " Create the window in a new vsplit (vertical) window
 command! -nargs=0 VimExplorerV :let g:VeOpening = 1 | cal g:BuildWindow('v') | cal g:VeGetPath() | cal g:VeDirectoryGoto(g:VeCfg.LastPath.Value) | let g:VeOpening = 0
 " Create the window in a new tab
@@ -890,24 +911,24 @@ command! -nargs=0 VimExplorerT :let g:VeOpening = 1 | cal g:BuildWindow('t') | c
 " Open vimExplorer using a the current file's path {{{2
 
 " Create the window in the current window
-command! -nargs=0 VimExplorerEF let g:VeOpening = 1 | let p = expand('%:p:h') | cal g:BuildWindow('e') | cal g:VeDirectoryGoto(p) | let g:VeOpening = 0
+command! -nargs=0 VimExplorerEF :let g:VeOpening = 1 | let p = expand('%:p:h') | cal g:BuildWindow('e') | cal g:VeDirectoryGoto(p) | let g:VeOpening = 0
 " Create the window in a new split (horizontal) window
-command! -nargs=0 VimExplorerSF let g:VeOpening = 1 | let p = expand('%:p:h') | cal g:BuildWindow('s') | cal g:VeDirectoryGoto(p) | let g:VeOpening = 0
+command! -nargs=0 VimExplorerSF :let g:VeOpening = 1 | let p = expand('%:p:h') | cal g:BuildWindow('s') | cal g:VeDirectoryGoto(p) | let g:VeOpening = 0
 " Create the window in a new vsplit (vertical) window
-command! -nargs=0 VimExplorerVF let g:VeOpening = 1 | let p = expand('%:p:h') | cal g:BuildWindow('v') | cal g:VeDirectoryGoto(p) | let g:VeOpening = 0
+command! -nargs=0 VimExplorerVF :let g:VeOpening = 1 | let p = expand('%:p:h') | cal g:BuildWindow('v') | cal g:VeDirectoryGoto(p) | let g:VeOpening = 0
 " Create the window in a new tab
-command! -nargs=0 VimExplorerTF let g:VeOpening = 1 | let p = expand('%:p:h') | cal g:BuildWindow('t') | cal g:VeDirectoryGoto(p) | let g:VeOpening = 0
+command! -nargs=0 VimExplorerTF :let g:VeOpening = 1 | let p = expand('%:p:h') | cal g:BuildWindow('t') | cal g:VeDirectoryGoto(p) | let g:VeOpening = 0
 
 " Open vimExplorer using a path specified on the command line {{{2
 
 " Create the window in the current window
-command! -nargs=1 VimExplorerEP let g:VeOpening = 1 | cal g:BuildWindow('e') | cal g:VeDirectoryGoto(<f-args>) | let g:VeOpening = 0
+command! -nargs=1 VimExplorerEP :let g:VeOpening = 1 | cal g:BuildWindow('e') | cal g:VeDirectoryGoto(<f-args>) | let g:VeOpening = 0
 " Create the window in a new split (horizontal) window
-command! -nargs=1 VimExplorerSP let g:VeOpening = 1 | cal g:BuildWindow('s') | cal g:VeDirectoryGoto(<f-args>) | let g:VeOpening = 0
+command! -nargs=1 VimExplorerSP :let g:VeOpening = 1 | cal g:BuildWindow('s') | cal g:VeDirectoryGoto(<f-args>) | let g:VeOpening = 0
 " Create the window in a new vsplit (vertical) window
-command! -nargs=1 VimExplorerVP let g:VeOpening = 1 | cal g:BuildWindow('v') | cal g:VeDirectoryGoto(<f-args>) | let g:VeOpening = 0
+command! -nargs=1 VimExplorerVP :let g:VeOpening = 1 | cal g:BuildWindow('v') | cal g:VeDirectoryGoto(<f-args>) | let g:VeOpening = 0
 " Create the window in a new tab
-command! -nargs=1 VimExplorerTP let g:VeOpening = 1 | cal g:BuildWindow('t') | cal g:VeDirectoryGoto(<f-args>) | let g:VeOpening = 0
+command! -nargs=1 VimExplorerTP :let g:VeOpening = 1 | cal g:BuildWindow('t') | cal g:VeDirectoryGoto(<f-args>) | let g:VeOpening = 0
 
 " Commands: File Selection {{{1
 
@@ -1326,7 +1347,7 @@ fu! g:BuildWindow(winType)
     " <space>o Reload directory
     nmap <silent> <buffer> <space>o :cal g:VeLs()<cr>
     " <space>o Reload configuration from file (useful if the .config.vim file was edited manually and you want to reload it in the vimExplorer window that is currently opened)
-    nmap <silent> <buffer> <space>O :cal g:VeLoadFromFile('s') \| echo 'Configuration loaded from: ' . g:VeCfgFile<cr>
+    nmap <silent> <buffer> <space>O :cal g:VeLoadFromFile(0) \| echo 'Configuration loaded from: ' . g:VeCfgFile<cr>
     " <space>P Show current path
     nmap <silent> <buffer> <space>P :pwd<cr> 
     " <space>r Run the current file or the selected files
@@ -1358,7 +1379,11 @@ fu! g:BuildWindow(winType)
         " <space>R Rename file
         nmap <silent> <buffer> <space>R :cal g:VeGetPath() \| unlet t \| let t = input('rename to: ', g:VeFileName) \| exe '!ren ' . g:VePaths.FileName2Q . ' "' . t . '"' \| cal g:VeLs() \| cal search(t)<cr>
         " <space>x Open directory in windows explorer
-        nmap <silent> <buffer> <space>x :cal g:VeGetPath() \| exe '!start explorer.exe ' . g:VePaths.PathB2Q<cr>
+        nmap <silent> <buffer> <space>x :cal g:VeGetPath() \| exe 'silent !start explorer.exe ' . g:VePaths.PathB2Q<cr>
+        " <space>9 Change the ls command for "UnxUtils" ls command
+        nmap <silent> <buffer> <space>9 :let g:VeLsCmdPath = g:VeLsCmdPathU \| echo 'The current ls command is now the "UnxUtils" ls command.'<cr>
+        " <space>0 Change the ls command for "Cygwin" ls command
+        nmap <silent> <buffer> <space>0 :let g:VeLsCmdPath = g:VeLsCmdPathC \| echo 'The current ls command is now the "Cygwin" ls command.'<cr>
     " -- Mappings: Linux specific {{{1
     else
         " <space>C Open directory in shell
@@ -1370,7 +1395,7 @@ fu! g:BuildWindow(winType)
         " <space>R Rename file
         nmap <silent> <buffer> <space>R :cal g:VeGetPath() \| unlet t \| let t = input("rename to: ', g:VeFileName) \| exe '! mv ' . g:VePaths.FileName2Q . ' "' . t . '"' \| cal g:VeLs() \| cal search(t)<cr>
         " <space>x Open directory in thunar
-        nmap <silent> <buffer> <space>x :cal g:VeGetPath() \| exe "!thunar ' . g:VePaths.PathS2Q<cr>
+        nmap <silent> <buffer> <space>x :cal g:VeGetPath() \| exe "silent !thunar ' . g:VePaths.PathS2Q<cr>
     endif
 
     " -- Mappings: For marks (bookmarks) {{{1
@@ -1430,6 +1455,10 @@ nmap <silent> <leader>der :new \| cal append(0, g:VeCommandToRun.ToXmlList())<cr
 " Remember cursor position using the filename or the cursor coordinates
 " The "path" parameter indicates to which directory the cursor position is remembered, it is the key
 fu! s:SetCursorPos(path)
+    " Exit if no path, for example for the first path browse there is not path where to set cursor
+    if a:path == ''
+        return
+    endif
     " To get the "g:VePaths.FileName" and the "g:VePathSource" {{{3
     cal g:VeGetPath()
     " If the key "a:path" dosen't exist {{{3
@@ -1459,6 +1488,7 @@ fu! s:SetCursorPos(path)
         let g:VeCfg.CursorPos[a:path].PathSource.Value = g:VePathSource
     endif
 endfu
+
 " s:ChangeDirectory(path) {{{2
 " Change directory
 fu! s:ChangeDirectory(path)
@@ -1470,7 +1500,7 @@ fu! s:ChangeDirectory(path)
     if has("Win32") && len(path) == 4
         let path = substitute(path, '//', '/', 'g')
     endif
-    " Change to the directory in vim
+    " Change to the directory in vim (if the VimExplorer.xml is deleted and VimExplorerE is called when vim is starting up, there will be an echo of the path after the following instruction)
     exe 'cd ' . path
     " Get real path from vim without /../.. etc
     let path = getcwd()
@@ -1657,17 +1687,17 @@ fu! g:VeLs()
     " List the directory {{{3
     " If not root path c:\ or another root, add quotes. Root path quoted ("c:\") will give an error. 
     " Or if there is a filter, then don't put quotes, quotes don't work in a filter
-    " Silent is used to prevent message if error listing directories for example if directories are written in russian for example, ls will say for example that c:/temp/???????: No such file or directory then say error messages that shell return 1 and how many lines else to show
+    " Silent is used to prevent message if error listing directories for example if directories are written in russian for example (if ls from UnxUtils is used), ls will say for example that c:/temp/???????: No such file or directory then say error messages that shell return 1 and how many lines else to show
     if (has("Win32") && len(g:VePath) == 3) || g:VeFilter != ''
         " Set filter
         let filter = ''
         if g:VeFilter != ''
             let filter = '/' . g:VeFilter
         endif
-        exe 'silent r! ' . s:LsCmdPath . ' -al ' . g:VeSort . ' ' . g:VeRecursive . ' ' . g:VePath . filter
+        exe 'silent r! ' . g:VeLsCmdPath . ' -al ' . g:VeSort . ' ' . g:VeRecursive . ' ' . g:VePath . filter
     else
         " Don't use g:VePathS2Q here because the paths in g:VeGetPath() are not updated at this point, the listing as to be completed first because the function attempts to get the recursive paths is any
-        exe 'silent r! ' . s:LsCmdPath . ' -al ' . g:VeSort . ' ' . g:VeRecursive . ' "' . g:VePath . '"'
+        exe 'silent r! ' . g:VeLsCmdPath . ' -al ' . g:VeSort . ' ' . g:VeRecursive . ' "' . g:VePath . '"'
     endif
     " Add items at the top of the buffer {{{3
     " Show the plugin name to identify the window as a vimExplorer window (the name could be shown in the status bar doing split vimExplorer but then a enew after it would remove the name, and without enew only two or more vimExplorer window would display the same content at the same time, being refreshed at the same time)
@@ -1763,7 +1793,7 @@ fu! g:VeLs()
             " Use the filename (default value) to go to position if it is a PathSource 'd' or 'f' (directory or file) that are inside the directory listing {{{4
             if g:VeCfg.CursorPos[g:VePath].PathSource.Value == 'd' || g:VeCfg.CursorPos[g:VePath].PathSource.Value == 'f'
                 " Match the full name and not only part of the name which could put the cursor on the wrong file, so match from the last number of the preceding column and spaces after until the end of line $
-                cal search('[0-9]\zs\s\+' . g:VeCfg.CursorPos[g:VePath].Value . '$')
+                cal search('\([0-9]\s\+\|\/\)\zs' . g:VeCfg.CursorPos[g:VePath].Value . '$')
                 normal l
             " Use the coordinates to go to the position if the position  {{{4
             else
@@ -2275,7 +2305,7 @@ endfu
 
 " Functions: Configuration {{{1
 
-" g:VeLoadFromFile() {{{2
+" g:VeLoadFromFile(restoreLastPath) {{{2
 " Load configuration from file
 fu! g:VeLoadFromFile(restoreLastPath)
     " Configuration object used to contain several configuration items loaded from a xml file and saved as a xml file {{{3
@@ -2337,4 +2367,3 @@ fu! g:VeSaveBar(barName)
     " Go back to previous position
 	cal setpos('.', savedPosition)
 endfu
-

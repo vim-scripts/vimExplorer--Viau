@@ -1,11 +1,13 @@
+" The vimExplorer.vim plugin code is following this code inserted here from the basicXmlParser.vim plugin
 " The basicXmlParser.vim plugin is added here before the vimExplorer.vim plugin to ensure compatibility. But it is available also as a separate plugin. If you have basicXmlParser.xml plugin in your plugin directory, you should remove it or it may conflict with this version.
 " Documentation {{{1
 "
 " Name: basicXmlParser.vim
-" Version: 1.0
+" Version: 1.2
 " Description: Plugin create object trees and get them or save them as xml, and to create object trees from a xml files. May be used as an object tree, the xml is the file format for load and save the object tree from and to a file. Serialization to xml is optional, the user is not required to load or to save to xml, the tree may be builded manually or programmatically. This plugin was created as a utility plugin to load and save configuration files. See the usage section on how to use the plugin.
 " Author: Alexandre Viau (alexandreviau@gmail.com)
 " Installation: Copy the plugin to the vim plugin directory.
+" Website: The latest version is found on "vim.org"
 "
 " Usage: {{{2
 
@@ -135,20 +137,28 @@
 " 
 " There is another way of creating the object trees using expressions, the "g:RootItem.LoadFile()" function is an example how to do this. By expressions, I mean that something like exe 'cal items.Items' . level . '.Add(g:Item.New("' . tag . '", ""))' may be used where the "level" variable would contain a string of the path to the items like for example "myItem1.Items.myItem2.Items".
 " Todo: {{{2
-" 1. Automatically put every tag and values each on his own line (it should be like this to be parsed correctly)
-" 2. Get multiline values inside tags
-" 3. Add some kind of iterator (like in the configuration utility with an ienumerator syntax) to loop the items (without having to check in the client code that the value is a dictionary) See ShowMarks function in vimExplorer where a check for dictionary type is needed and checking if dictionary empty and also a key, value foreach loop dosen't work, the value is not set and there is need to get it using the full g:VeCfg.Mark[key].Value
-"    Or at least find a way to filter out the items that are not dictionaries using the filter command.
-"    Give examples how to iterate items in the usage section    
-" 4. Maybe find a way that to get or set a value that does not exist a check and creation would not be needed in the client code (maybe through a function)
-
+" Code organization {{{3
+" - Add error handling (try..catch), example in the g:Item.Add() function which cannot have a "a:item.GetName()" empty
+" Documentation {{{3
+" - Give examples how to iterate items in the usage section IF the iterator cannot be realize because of time or functionnality. Add loop examples in the documentation, how to loop sub items in an item. Take example code from vimExplorer.
+" Improvements to current features {{{3
+" - Automatically put every tag and values each on his own line (it should be like this to be parsed correctly)
+" - Get multiline values inside tags
+" - Maybe find a way that to get or set a value that does not exist a check and creation would not be needed in the client code (maybe through a function)
+" New features {{{3
+" - Add some kind of iterator (like in the configuration utility with an ienumerator syntax) to loop the items (without having to check in the client code that the value is a dictionary) See ShowMarks function in vimExplorer where a check for dictionary type is needed and checking if dictionary empty and also a key, value foreach loop dosen't work, the value is not set and there is need to get it using the full g:VeCfg.Mark[key].Value. Or at least find a way to filter out the items that are not dictionaries using the filter command.
+"
+" Bugs: {{{2
+" - No known bugs for now.
 "
 " History: {{{2
 "
-" 1.0 Initial release
-" 1.1 Added a function to remove items from the tree "g:Item.Remove(name)" by specifying its name in parameter
-"     Added the "Contains(name)" function to check existance of an item
-"     Changed the file format to display the xml tree with each tag being an "item" tag having a name attribute instead of having the name as the tag itself. One avantage of this format is to being able to have a "/" in the tag name. So a xml tree formely in a format like this:
+" 1.0 {{{3 
+" - Initial release
+" 1.1 
+" - Added a function to remove items from the tree "g:Item.Remove(name)" by specifying its name in parameter
+" - Added the "Contains(name)" function to check existance of an item
+" - Changed the file format to display the xml tree with each tag being an "item" tag having a name attribute instead of having the name as the tag itself. One avantage of this format is to being able to have a "/" in the tag name. So a xml tree formely in a format like this:
 " <root>
 "    <Marks>
 "       <A>
@@ -196,6 +206,8 @@
 "       d:\
 "    </item>
 " </item>
+" 1.2 
+" - Added organization in the todo, bugs and history sections of the documentation
 "
 " Class Item {{{1
 
@@ -410,16 +422,22 @@ endfunction
 " Documentation {{{1
 
 " Name: vimExplorer.vim
-" Version: 2.1
+" Version: 2.2
 " Description: Explore directories quickly and operate on files.
 " Author: Alexandre Viau (alexandreviau@gmail.com)
+" Website: The latest version is found on "vim.org"
 "
+" About {{{2 
+"
+" I would like if vimExplorer would become an open source, cross-platform, text and keyboard oriented filemanager alternative. It is now in that direction since version 2.0 vimExplorer is able to open, copy, move, delete, delete, run files and more. Using vim and its amazing text editing power and keyboard mapping habilities as an interface and numerous powerful shell commands for file management makes vimExplorer the ideal solution for fast and flexible file editing and management. I put a lot of thinking to make it as much comfortable, fast and easy to use as possible. With vimExplorer I try also to solve the difficulties (if I may say so) of file system access from vim (to find files, open them for edition, etc). Also to be able to do file management, grepping and searching from within vim without having to use an external program or shell could potentially increase productivity.
+
 " Installation {{{2
 "
-" Copy the plugin to the vim plugin directory. 
-" If you use the plugin in Windows, you will have to change the value of the "g:VeLsCmdPath" to that of the path where your ls command is located. Search for the variable using: /let g:VeLsCmdPath (You may also set that variable to 'ls' simply and set the path to the executable using the system %path% variable)
-" There are mappings (<space>9 and <space>0) to switch between the ls command from "UnxUtils" or the ls command from "Cygwin". So you may use both like I do by setting a path for each of these variables "g:VeLsCmdPathU" and "g:VeLsCmdPathC". I personally use the ls command from "UnxUtils" for speed, and the ls command from "Cygwin" to display russian alphabet. I use these mappings to switch from one to another depending if I need they are file and directory names that are written with the russian alphabet.
-" If you use the plugin in Windows, you will have to change also the value of the "g:VeGrepCmdPath" to that of the path where your grep command is located. Search for the variable using: /let g:VeGrepCmdPath (You may also set that variable to 'grep' simply and set the path to the executable using the system %path% variable)
+" - Copy the plugin to the vim plugin directory. 
+" - If you use the plugin in Windows, you will have to change the value of the "g:VeLsCmdPath" to that of the path where your ls command is located. Search for the variable using: /let g:VeLsCmdPath (You may also set that variable to 'ls' simply and set the path to the executable using the system %path% variable)
+" - There are mappings (<space>9 and <space>0) to switch between the ls command from "UnxUtils" or the ls command from "Cygwin". So you may use both like I do by setting a path for each of these variables "g:VeLsCmdPathU" and "g:VeLsCmdPathC". I personally use the ls command from "UnxUtils" for speed, and the ls command from "Cygwin" to display russian alphabet. I use these mappings to switch from one to another depending if I need they are file and directory names that are written with the russian alphabet.
+" - If you use the plugin in Windows, you will have to change also the value of the "g:VeGrepCmdPath" to that of the path where your grep command is located. Search for the variable using: /let g:VeGrepCmdPath (You may also set that variable to 'grep' simply and set the path to the executable using the system %path% variable)
+" - vimExplorer requires depends on the "basicXmlParser.vim" plugin which is included at the top of this file to ensure compatibility and presence of the plugin.
 "
 " Usage {{{2
 "
@@ -437,7 +455,7 @@ endfunction
 " <leader>vf Start vimExplorer with four panes (for file copy, move etc)
 " <leader>vx Start vimExplorer with six panes (for file copy, move etc)
 "
-" NOTE: 1. There are other suggested mappings commented out where the preceding mappings are defined, to open vimExplorer in one key press. 
+" NOTE: 1. There are other suggested mappings commented out where the preceding mappings are defined, to open vimExplorer in one key press. See "other suggested mappings" sections below in this documentation section.
 "       2. You may create the number of panes vertical or horizontal you want by mixing the VimExplorerT, VimExplorerV and VimExplorerS in a command or a mapping you would add yourself to your vimrc. See the <leader>vd and <leader>vh mappings in this plugin as examples, these only use a combination of VimExplorerT and VimExplorerV or VimExplorers to create the panes. You may even have 4 or 6 panes even, as much as you need.
 "
 " Open vimExplorer using a the current file's path {{{4
@@ -506,6 +524,7 @@ endfunction
 " Directory file grep {{{4
 "
 " <space>g Grep current file/directory or the selected files/directories
+" The grep results appear after the file listing in the same buffer. You may position the cursor on a line in these results and press <space>l or <enter> to view it in the preview window.
 " NOTE: 1. Some file operations mappings work with the links in these grep results links for example: <space>t to open in new tab, <space>r to run, <space>x to open in external filemanager (check the "File operations" below)
 "
 " Directory file search {{{4
@@ -555,7 +574,7 @@ endfunction
 " Configuration file operations {{{4
 "
 " <space>O Reload configuration from file (useful if the .config.vim file was edited manually and you want to reload it in the vimExplorer window that is currently opened)
-" <space>s Save configuration file
+" <space>S Save configuration file
 
 " NOTE: 1. The configuration is automatically loaded when vim starts, and it is automatically closed when vim quits.
 "       2. You may open the configuration file for edition, and after editing and saving the file, return to a vimExplorer window and do <space>O to reload the new configuration file.
@@ -589,54 +608,59 @@ endfunction
 " VimExplorerVP Start vimExplorer in a new vsplit (vertical) window
 " VimExplorerTP Start vimExplorer in a new tab
 "
-" vimExplorer selected files commands using the current directory as the target directory {{{4
-"
-" VimExplorerCopy Copy selected files
-" VimExplorerMove Move selected files
-"
-" vimExplorer selected files commands using a directory specified on the command line as the target directory {{{4
-"
-" VimExplorerCopy Copy selected files
-" VimExplorerMove Move selected files
-"
 " How to get the current path and filename for usage in external scripts {{{3
 "
-" If you want to get the current path and filename from vimExplorer first calthe "g:VeGetPath()" then use the following variables as needed.
+" If you want to get the current path and filename from vimExplorer first cal the "g:VeGetPath()" then use the following variables as needed.
 " These paths variables may be used for example if you do new mappings or some kind of menu to execute operations on the current file or directory.
 " Note that the current path and filename are copied when leaving the plugin or any file window for another window so the following variables could be used from there.
 " If you don't want to copy the path when leaving any file window, but just when leaving a vimExplorer window, set the variable "s:GetPathOnLeaveAlways" to 0
 "
-" Filename
-"   g:VeFileName (filename only without path)
-"   g:VeFileNameQ (filename only without path + quotes)
-"   g:VeFileName2Q (filename only without path + double quotes)
-" Path with / (slash)
-"   g:VePathS (without filename)
-"   g:VePathSQ (without filename + quotes)
-"   g:VePathS2Q (without filename + double quotes)
-"   g:VeFullPathS (with filename)
-"   g:VeFullPathSQ (with filename + quotes)
-"   g:VeFullPathS2Q (with filename + double quotes)
-" Path with \ (B = backslash)
-"   g:VePathB (without filename)
-"   g:VePathBQ (without filename + quotes)
-"   g:VePathB2Q (without filename + double quotes)
-"   g:VeFullPathB (with filename)
-"   g:VeFullPathBQ (with filename + quotes)
-"   g:VeFullPathB2Q (with filename + double quotes)
-" Path with \\ (2B = double backslash)
-"   g:VePath2B
-"   g:VePath2BQ = (without filename + quotes)
-"   g:VePath2B2Q = (without filename + double quotes)
-"   g:VeFullPath2B (with filename)
-"   g:VeFullPath2BQ (with filename + quotes)
-"   g:VeFullPath2B2Q (with filename + double quotes)
+" g:VePaths.FileName  
+" g:VePaths.FileNameQ  
+" g:VePaths.FileName2Q  
+" g:VePaths.PathS  
+" g:VePaths.PathSQ  
+" g:VePaths.PathS2Q  
+" g:VePaths.FullPathS  
+" g:VePaths.FullPathSQ  
+" g:VePaths.FullPathS2Q  
+" g:VePaths.PathB  
+" g:VePaths.PathBQ  
+" g:VePaths.PathB2Q  
+" g:VePaths.FullPathB  
+" g:VePaths.FullPathBQ  
+" g:VePaths.FullPathB2Q  
+" g:VePaths.Path2B  
+" g:VePaths.Path2BQ  
+" g:VePaths.Path2B2Q  
+" g:VePaths.FullPath2B  
+" g:VePaths.FullPath2BQ  
+" g:VePaths.FullPath2B2Q  
+" g:VePaths.DosFileName  
+" g:VePaths.DosFileNameQ  
+" g:VePaths.DosFileName2Q  
+" g:VePaths.DosPathS  
+" g:VePaths.DosPathSQ  
+" g:VePaths.DosPathS2Q  
+" g:VePaths.DosFullPathS  
+" g:VePaths.DosFullPathSQ  
+" g:VePaths.DosFullPathS2Q  
+" g:VePaths.DosPathB  
+" g:VePaths.DosPathBQ  
+" g:VePaths.DosPathB2Q  
+" g:VePaths.DosFullPathB  
+" g:VePaths.DosFullPathBQ  
+" g:VePaths.DosFullPathB2Q  
+" g:VePaths.DosPath2B  
+" g:VePaths.DosPath2BQ  
+" g:VePaths.DosPath2B2Q  
+" g:VePaths.DosFullPath2B  
+" g:VePaths.DosFullPath2BQ  
+" g:VePaths.DosFullPath2B2Q  
 "
 " How to open vimExplorer from another script {{{3
 "
-" calthe function "g:VeDirectoryGoto()" and pass the path as parameter.
-" Example:  cal g:VeDirectoryGoto('/usr/bin') or cal g:VeDirectoryGoto('c:/windows')
-" You may have to do a "split", "vsplit" or "tabnew" before calling "g:VeDirectoryGoto()"
+" Use the VimExplorerE, VimExplorerT, etc and/or other VimExplorer commands to start the plugin.
 "
 " How to change the colors of the display {{{3
 "
@@ -664,85 +688,136 @@ endfunction
 " " Rename directories (Step2) (append '_bkp' to selected directories) (In Windows use "!ren", in Linux "!mv")
 " let g:VeCommands.User.Step2.Command.Value = 'cal system("ren \"%SelFileName%\" \"%SelFileName%_bkp\"")'
 "
-" Tips {{{2
+" Other suggested mappings {{{3
+
+" Other suggested mappings to open vimExplorer in one key press (to put in this plugin or in your vimrc) {{{4
+" nmap <f2> :VimExplorerS<cr>
+" nmap <f3> :VimExplorerV<cr>
+" nmap <f4> :VimExplorerT<cr>
+" nmap <f5> :VimExplorerE<cr>
+" nmap <home> :VimExplorerS<cr>
+" nmap <PageUp> :VimExplorerV<cr>
+" nmap <PageDown> :VimExplorerT<cr>
+" nmap <End> :VimExplorerE<cr>
+" " 2 vertical windows
+" nmap <s-f2> :exe 'VimExplorerT' \| exe 'VimExplorerV'<cr>
+" nmap <s-home> :exe 'VimExplorerT' \| exe 'VimExplorerV'<cr>
+" " 4 windows
+" nmap <s-f3> :exe 'VimExplorerT' \| exe 'VimExplorerV' \| exe 'VimExplorerS' \| wincmd l \| exe 'VimExplorerS'<cr>
+" nmap <s-PageUp> :exe 'VimExplorerT' \| exe 'VimExplorerV' \| exe 'VimExplorerS' \| wincmd l \| exe 'VimExplorerS'<cr>
+" " 6 windows
+" nmap <s-f4> :exe 'VimExplorerT' \| exe 'VimExplorerV' \| exe 'VimExplorerS' \| exe 'VimExplorerS' \| wincmd l \| exe 'VimExplorerS' \| exe 'VimExplorerS'<cr>
+" nmap <s-PageDown> :exe 'VimExplorerT' \| exe 'VimExplorerV' \| exe 'VimExplorerS' \| exe 'VimExplorerS' \| wincmd l \| exe 'VimExplorerS' \| exe 'VimExplorerS'<cr>
 "
-"  - You may use the "set wrap" command to see all history if the list is long.
-"  - To search files in a directory, open the selected directory recursively using <space>L and then search the buffer for the file using vim's "/" command or use vimgrep.
-"  - I use also the MRU plugin in combination with vimExplorer to have a list of the last opened files, I find it extremely useful for vim editing.
-"  - If you need to do file operations like copy or move files, since these are not implemented in the plugin, vimExplorer to move quickly between directories and then do <space>x to open you file manager or <space>C to open the console, also <space><esc> to run a command. 
-"  - To go quickly to the favorites bar, do <space>; or <space>, which brings the cursor on the history bar, then do "j" to go down one line, then press ";" or "," to go forward and backward on the favorites bar.
-"  - You may search the history and favorites using the "/" or the "?" command, especially the "?" command as the links are at the top of the file.
-"  - To toggle to the last accessed directory do: <space>; then again ; and <enter> This will use the history bar to go to the directory.
+" Tips {{{2
+" - You may use the "set wrap" command to see all history if the list is long.
+" - To search files in a directory, open the selected directory recursively using <space>L and then search the buffer for the file using vim's "/" command or use vimgrep.
+" - I use also the MRU plugin in combination with vimExplorer to have a list of the last opened files, I find it extremely useful for vim editing.
+" - To go quickly to the favorites bar, do <space>; or <space>, which brings the cursor on the history bar, then do "j" to go down one line, then press ";" or "," to go forward and backward on the favorites bar.
+" - You may search the history and favorites using the "/" or the "?" command, especially the "?" command as the links are at the top of the file.
 "
 " Todo {{{2
-"  - Add pathsources that the user commands can be run onto
-"  - il y a l'history bar et favorites dans la liste des marks <space>'
-"  - Check if g:VeFileName occurences really could not be replaced by g:VePaths.FileName
-"  - There are several modifications that could be done to the commands on selected files: grep recursive file/directories results, user command to execute on recursive directories/files and on grep results
-"  - When opening grep results in new tabs, the g:VeCommandToRun object is used to open the selected files, so the previous g:veCommandToRun which contained the grep command results is replaced by the OpenInNewTab command, that is why when returning to the VimExplorer window after viewing executing this OpenInNewTab on grep results command the previous grep results are not there anymore. This is somehow a limitation, to overcome this there could be an array of g:VeCommandToRun for example, but for now to leave it like this. 
-"  - Add commands to copy files, move files etc that can be used from command line and call these from the mappings
-"  - Add documentation about user-defined commands
-"  - In the sample user commands, the copy to clipboard even with many selected files copies only one file to clipboard (maybe put a <cr> after the command?)
-"  - Improve the run command to make it run asynchronously if possible in Linux
-"  - When selected files from a recursive listing, if the same filenames appear in other subdirs they are also highlighted (but not added to selection) this is because the highlight is based on the filename... I'm not sure there may be a simple solution to this
-"  - add a bar for recent files
-"  - add a bar for buffers
+" Code organization {{{3
+" - Check if g:VeFileName occurences really could not be replaced by g:VePaths.FileName
+" Documentation {{{3
+" - Add documentation about user-defined commands
+" Improvements to current features {{{3
+" - Add pathsources that the user commands can be run onto
+" - There are several modifications that could be done to the commands on selected files: grep recursive file/directories results, user command to execute on recursive directories/files and on grep results
+" - Improve the run command to make it run asynchronously if possible in Linux
+" - Maybe I should remove from selection the files after the command is ran like I did for the run command adding "\| let g:VeSelectedFiles = g:Item.New1('SelectedFiles') \| cal g:VeLs()" to the command
+" - Maybe eventually, if it would proove to be better, to replace the ls command by the glob() function and use more the other file functions found in function-list like getftype() for example...but I'd say that ls is faster than glob and that it has dates, sorts etc
+" - For now the encoding used for shell commands is 'latin1' which supports french special characters like accents, that makes it possible to run commands or copy (etc) files that have these special characters in their path. But it is not possible for now to run commands on files with other characters than included in 'latin1' encoding, like russian characters, chinese characters etc You may change the 'latin1' by something else if you wish by searching 'latin1' in the code. If I find a solution that works universally for all languages, like the use of utf-8, I will do the modification for it.
+" New features {{{3
+" - Add commands to copy files, move files etc that can be used from command line and call these from the mappings
+" - Add a bar for recent files: (see Mru plugin how its done, maybe use an autocommand on "bufopen") and add to g:VeCfg
+" - Add a bar for buffers opened: list buffers (see vimrc <tab>b, add maybe mapping for close buffer maybe so a buffer "link" may be closed
+" - Maybe add a function to collect words or strings from selected files, use the collect function from my vimrc and add a collect command
+"
+" Bugs {{{2
+" - When opening grep results in new tabs, the g:VeCommandToRun object is used to open the selected files, so the previous g:veCommandToRun which contained the grep command results is replaced by the OpenInNewTab command, that is why when returning to the VimExplorer window after viewing executing this OpenInNewTab on grep results command the previous grep results are not there anymore. This is somehow a limitation, to overcome this there could be an array of g:VeCommandToRun for example, but for now to leave it like this. 
+" - When selected files from a recursive listing, if the same filenames appear in other subdirs they are also highlighted (but not added to selection) this is because the highlight is based on the filename... I'm not sure there may be a simple solution to this
+" - Cannot execute external commands (copy, delete, etc) on files that contains french accents for example or russian alphabet
+"   - the fnamemodify() function with the :8 parameter to obtain dos names dosen't return the dos name if the path is not written in english (containing other characters than english chars) like in french or russian it dosen't work. So get the dos filename from the dir command using the dir /x FullPath command
+"   - Wait answer from Xaizek on this, I sent email to him
+" - In the sample user commands, the copy to clipboard even with many selected files copies only one file to clipboard (maybe put a <cr> after the command?)
+" - When opening a html file with \ww (in my vimrc) in vimExplorer, the color syntax seemed one time to change in the code...to test
+" - Cannot run commands on file written with the russian alphabet (see RunCommand() function, exe iconv(command, &enc, 'latin1')) This iconv() conversion works for french but not for russian (latin1 is also what is used in the shell (cp850) so there is not problem there, but with russian even by changing the shell with chcp 855 or chcp 866 and doing after the command with the russian name it dosen't work, for example echo system('chcp 855 & type "' . iconv('c:\temp\Copy of Новый текстовый документ.txt', &enc, 'cp855') . '"')
+" Annoyances {{{3
+" - Try to find way not to see the appearing/disapearing taskbar button when cal system('cd "' . path . '"') and exe 'silent r! ls.exe...' are executed
 " History {{{2
 "
-" 1.0 First release
-" 1.1 Modified the GetFileName() function: when there is very large files with the number of bytes taking much spaces, the filenames may not be aligned, so to find the position of the first filename was not enough, I had to find the position of the filename on the current line, each independently.
-"     Added the favorites bar that offers another way of bookmarking directories other than directory marks.
-"     Corrected the history bar and favorites bar, the links where not executed when <space>l or <enter> were pressed on the "]" character.
-"     Added initialization of the fileName variable to '' in the GetFileName() function
-"     Added possibility to edit the history bar and favorites bar. They will be saved when changing directories or when <space>s is pressed, or when vim quits if the cursor is in a vimExplorer window.
-"     You may now write or edit a path manually in the "Path: " bar at the top of the buffer. Once the path is entered, press <space>l or <enter> to go to that path.
-"     Now use <space>a to go the path at the top of the buffer to edit it. Press <space>l or <enter> (in normal mode) to go the that path once edited.
-"     Modified comments: there was <space>g to execute history paths, now <space>l or <enter>. I modified other comments as well.
-" 1.2 Added <space>e (edit) to open files in current buffer.
-"     Changed commands VimExplorerB, VimExplorerBF, VimExplorerBP for VimExplorerE, VimExplorerEF, VimExplorerEP 
-"     Changed mappings \vb and \VB for \ve and \VE so it is similar to the <space>e command, to keep consistance between mappings.
-"     Added very large max length for favorites not to autodelete them if there are too many like with the history bar.
-"     Added the possibility to calg:VeGetPath() from any file, not just from a vimExplorer window, to get the multiple path formats to global variables. This allows for example to switch to another window where there would be a menu of links that contains the path variables in commands. One example could be that a code file is in edition, once saved, switch to menu window and execute the commands from the links. If you don't want to get the paths when leaving any files, set the "s:GetPathOnLeaveAlways" variable to 0
-"     Modified comments
-" 1.3 Added folds in GetFileName(), VeLs()
-"     Modified comments, the \vb and \VB mappings where still in the documentation but they was replaced by \ve and \VE.
-" 2.0 Give same behavior to all paths, this means that links, grep results paths, recursive listing paths all behave the same way like files in the directory listing. So now it is possible for example to open a link in the favorites bar or history bar in another tab using <space>t or to open a grep result in a vertical split window doing <space>v. See the "File operations" section in the documentation usage, to see other possible actions to do on directories, files and links.
-"     Now directory may be opened in new tabs or new split etc like any file.
-"     The configuration file is now a xml file the previous file format using a dictionary is not compatible anymore. The plugin used for this xml file is "basicXmlParser.vim" which is included in this plugin so that each release will have the corresponding working version of the plugin
-"     Copy and move files and directories works in windows (not tested in linux)
-"     Now possible to open multiple selected files each in a new tab
-"     Added shift-j To open the next file in the preview window, shift-k Go open the previous file in the preview window, and also the default action now to open items is in the preview window
-"     It is now possible to add files to the favorites bar using <space>B (<space>b add a directory). This means that the favorites bar can now be used to bookmark directories but also to contain links to files (like shortcuts).
-"     Corrected bug in the GetFileName() function when there was a filter set with <space>f, the files could not opened.
-"     I removed one function that was not used anymore to add favorites, it was replaced by AddToBar() which is used also for the history bar.
-"     Removed the VeGetFileName() function, put its code in the VeGetPath() function  
-"     Corrected a bug in the change directory function, now changes directory without interruption
-"     Change <space>s (save configuration) for <space>S. <space>s is not used to select a file.  
-"     Added <space>X Open current directory with the gvim "browse" command to open a file in the current buffer
-"     Changed the fold level for the mappings so they appear at the first level for more easy access
-"     Put the matchadd() to set the colors inside try..catch in case the highlight groups defined are not present in the current color scheme. I added a documentation section explaining how to change these colors.
-"     Added a new variable to know what was the last history path added not to add the current path multiple times (suggestion from Xaizek)
-"     Replaced the fixed value for the starting line of the directory listing by a function called "g:VeGetDirectoryListLineNum()"
-"     Removed a "\s" from the regexes to test if the line is a directory or a file ("^d.\{9}\s" or "^-.\{9}\s") because in cygwin there is only one \s but with UnxUtils there are 2. 
-"     Changed the variable $home by $HOME because in linux it is case sensitive
-"     Removed the option "setlocal nowrap" in the BuildWindow() function, because a user may want always to have the history and favorites bar wrapped
-"     Corrected the <leader>VV mapping, it was <leader>VV> and was not executing
-"     Corrected/added <space>` to show the marks same like <space>'
-"     Added user-commands that can be run on selected files
-"     I remove TabEnter/Leave and BufEnter/Leave from the autocommands which call s:OnEnter() and s:OnLeave(), this was causing these functions to be called 3 times thus slowing access to the windows, this removed the necessity for the usage of the variable g:VeAutoRefreshOnEnter that was removed
-"     Change map to nmap in mappings to start the plugin
-"     Added mappings to inspect the content of the selected files object, the commands object and the command to run object
-"     Added operations on selected files in a recursive listing also (ls -R) Copy, move, delete, OpenInNewTab etc
-"     Added selection of items in the links bar
-" 2.1 Added "silent" to the <space>x mappings
-"     Corrected bug in the s:SetCursorPos(path) (to exit if there are no path)
-"     Did testing when there are no VimExplorer.xml file
-"     Change suggested mappings (commented out) (f2, f3, ..., Home, PageUp, etc)
-"     Modified the installation instructions to indicated that if you use the plugin in Windows, you will have to change the value of the "g:VeLsCmdPath" to that of the path where your ls command is located. Search for the variable using: /let g:VeLsCmdPath
-"     Added <space>9 If Windows is used to change the ls command for "UnxUtils" ls command
-"     Added <space>0 If Windows is used to Change the ls command for "Cygwin" ls command
-"     Modified also the installation instructions to indicated that if you use the plugin in Windows, you will have to change also the value of the "g:VeGrepCmdPath" to that of the path where your grep command is located. Search for the variable using: /let g:VeGrepCmdPath (You may also set that variable to 'grep' simply and set the path to the executable using the system %path% variable)
-"     Change the regex so that the cursor position is remembered also when there is a filter: changed "cal search('\([0-9]\s\+\|\/\)\zs\s\+' . g:VeCfg.CursorPos[g:VePath].Value . '$')" to "cal search('[0-9]\zs\s\+' . g:VeCfg.CursorPos[g:VePath].Value . '$')"
+" 1.0 {{{3
+" - First release
+" 1.1 {{{3
+" - Modified the GetFileName() function: when there is very large files with the number of bytes taking much spaces, the filenames may not be aligned, so to find the position of the first filename was not enough, I had to find the position of the filename on the current line, each independently.
+" - Added the favorites bar that offers another way of bookmarking directories other than directory marks.
+" - Corrected the history bar and favorites bar, the links where not executed when <space>l or <enter> were pressed on the "]" character.
+" - Added initialization of the fileName variable to '' in the GetFileName() function
+" - Added possibility to edit the history bar and favorites bar. They will be saved when changing directories or when <space>s is pressed, or when vim quits if the cursor is in a vimExplorer window.
+" - You may now write or edit a path manually in the "Path: " bar at the top of the buffer. Once the path is entered, press <space>l or <enter> to go to that path.
+" - Now use <space>a to go the path at the top of the buffer to edit it. Press <space>l or <enter> (in normal mode) to go the that path once edited.
+" - Modified comments: there was <space>g to execute history paths, now <space>l or <enter>. I modified other comments as well.
+" 1.2 {{{3
+" - Added <space>e (edit) to open files in current buffer.
+" - Changed commands VimExplorerB, VimExplorerBF, VimExplorerBP for VimExplorerE, VimExplorerEF, VimExplorerEP 
+" - Changed mappings \vb and \VB for \ve and \VE so it is similar to the <space>e command, to keep consistance between mappings.
+" - Added very large max length for favorites not to autodelete them if there are too many like with the history bar.
+" - Added the possibility to calg:VeGetPath() from any file, not just from a vimExplorer window, to get the multiple path formats to global variables. This allows for example to switch to another window where there would be a menu of links that contains the path variables in commands. One example could be that a code file is in edition, once saved, switch to menu window and execute the commands from the links. If you don't want to get the paths when leaving any files, set the "s:GetPathOnLeaveAlways" variable to 0
+" - Modified comments
+" 1.3 {{{3
+" - Added folds in GetFileName(), VeLs()
+" - Modified comments, the \vb and \VB mappings where still in the documentation but they was replaced by \ve and \VE.
+" 2.0 {{{3
+" - Give same behavior to all paths, this means that links, grep results paths, recursive listing paths all behave the same way like files in the directory listing. So now it is possible for example to open a link in the favorites bar or history bar in another tab using <space>t or to open a grep result in a vertical split window doing <space>v. See the "File operations" section in the documentation usage, to see other possible actions to do on directories, files and links.
+" - Now directory may be opened in new tabs or new split etc like any file.
+" - The configuration file is now a xml file the previous file format using a dictionary is not compatible anymore. The plugin used for this xml file is "basicXmlParser.vim" which is included in this plugin so that each release will have the corresponding working version of the plugin
+" - Copy and move files and directories works in windows (not tested in linux)
+" - Now possible to open multiple selected files each in a new tab
+" - Added shift-j To open the next file in the preview window, shift-k Go open the previous file in the preview window, and also the default action now to open items is in the preview window
+" - It is now possible to add files to the favorites bar using <space>B (<space>b add a directory). This means that the favorites bar can now be used to bookmark directories but also to contain links to files (like shortcuts).
+" - Corrected bug in the GetFileName() function when there was a filter set with <space>f, the files could not opened.
+" - I removed one function that was not used anymore to add favorites, it was replaced by AddToBar() which is used also for the history bar.
+" - Removed the VeGetFileName() function, put its code in the VeGetPath() function  
+" - Corrected a bug in the change directory function, now changes directory without interruption
+" - Change <space>s (save configuration) for <space>S. <space>s is not used to select a file.  
+" - Added <space>X Open current directory with the gvim "browse" command to open a file in the current buffer
+" - Changed the fold level for the mappings so they appear at the first level for more easy access
+" - Put the matchadd() to set the colors inside try..catch in case the highlight groups defined are not present in the current color scheme. I added a documentation section explaining how to change these colors.
+" - Added a new variable to know what was the last history path added not to add the current path multiple times (suggestion from Xaizek)
+" - Replaced the fixed value for the starting line of the directory listing by a function called "g:VeGetDirectoryListLineNum()"
+" - Removed a "\s" from the regexes to test if the line is a directory or a file ("^d.\{9}\s" or "^-.\{9}\s") because in cygwin there is only one \s but with UnxUtils there are 2. 
+" - Changed the variable $home by $HOME because in linux it is case sensitive
+" - Removed the option "setlocal nowrap" in the BuildWindow() function, because a user may want always to have the history and favorites bar wrapped
+" - Corrected the <leader>VV mapping, it was <leader>VV> and was not executing
+" - Corrected/added <space>` to show the marks same like <space>'
+" - Added user-commands that can be run on selected files
+" - I remove TabEnter/Leave and BufEnter/Leave from the autocommands which call s:OnEnter() and s:OnLeave(), this was causing these functions to be called 3 times thus slowing access to the windows, this removed the necessity for the usage of the variable g:VeAutoRefreshOnEnter that was removed
+" - Change map to nmap in mappings to start the plugin
+" - Added mappings to inspect the content of the selected files object, the commands object and the command to run object
+" - Added operations on selected files in a recursive listing also (ls -R) Copy, move, delete, OpenInNewTab etc
+" - Added selection of items in the links bar
+" 2.1 {{{3
+" - Added "silent" to the <space>x mappings
+" - Corrected bug in the s:SetCursorPos(path) (to exit if there are no path)
+" - Did testing when there are no VimExplorer.xml file
+" - Change suggested mappings (commented out) (f2, f3, ..., Home, PageUp, etc)
+" - Modified the installation instructions to indicated that if you use the plugin in Windows, you will have to change the value of the "g:VeLsCmdPath" to that of the path where your ls command is located. Search for the variable using: /let g:VeLsCmdPath
+" - Added <space>9 If Windows is used to change the ls command for "UnxUtils" ls command
+" - Added <space>0 If Windows is used to Change the ls command for "Cygwin" ls command
+" - Modified also the installation instructions to indicated that if you use the plugin in Windows, you will have to change also the value of the "g:VeGrepCmdPath" to that of the path where your grep command is located. Search for the variable using: /let g:VeGrepCmdPath (You may also set that variable to 'grep' simply and set the path to the executable using the system %path% variable)
+" - Change the regex so that the cursor position is remembered also when there is a filter: changed "cal search('\([0-9]\s\+\|\/\)\zs\s\+' . g:VeCfg.CursorPos[g:VePath].Value . '$')" to "cal search('[0-9]\zs\s\+' . g:VeCfg.CursorPos[g:VePath].Value . '$')"
+" - Changed ! for system() in the <space>c (clone) mapping, not to see the prompt window
+" - Changed ! for system() in the <space>R (rename) mapping, not to see the prompt window
+" - Changed unlet to unlet! in the <space>R command
+" 2.2 {{{3
+" - Added many new paths formats for dos, so all the current path formats have their dos equivalent with 8 characters only for directory and file names.
+" - Removed some blank spaces that where found after <cr> in some mappings that where "pressing a space" after executing the mapping
+" - Improved organization and content in the documentation and remove old items in the documentation
+" - Removed file selections after executing the run command
+" - Removed the <c-a> mapping to select all files because it was selecting grep results also...
+" - changed the default paths for ls.exe and grep.exe from "UnxUtils", they are now in the "$vim" folder this as the benefit of making these command move with the vim folder, so they are always available where the vim folder is copied. This is for "UnxUtils" on Windows, it as no impact on Linux or on Windows if "Cygwin" is used.
+" - I changed the exe command for Windows in the RunCommand() function by exe iconv(command, &enc, 'latin1') to be able to run commands on file with french accents. In my tests I could do for files with russian alphabet echo system('type "' . iconv('c:\temp\Новый текстовый документ.txt', &enc, 'latin1') . '"') and the content of that file was echoed, but it dosen't work for the run command for example
 "
 " Variables: Plugin {{{1
 
@@ -807,7 +882,7 @@ let g:VeRecursiveData = []
 " NOTE: There are mappings (<space>9 and <space>0) to switch between the ls command from "UnxUtils" or the ls command from "Cygwin". So you may use both like I do by setting a path for each of these variables "g:VeLsCmdPathU" and "g:VeLsCmdPathC". I personally use the ls command from "UnxUtils" for speed, and the ls command from "Cygwin" to display russian alphabet. I use these mappings to switch from one to another depending if I need they are file and directory names that are written with the russian alphabet.
 if has('Win32')
     " UnixUtils ls command path (The version I tested dosen't show Windows7 links as links but shows them as regular directories, and it produce an error when changing to it and produces errors if russian directory name. It seems also more faster than cygwin ls but cygwin ls displays everything correctly including russian alphabet but is much slower in Windows.) 
-    let g:VeLsCmdPathU = 'C:\Usb\z_white\Apps\Portable\CmdUtils\ls.exe'
+    let g:VeLsCmdPathU = $vim . '\ls.exe'
     " Cygwin ls command
     let g:VeLsCmdPathC = 'c:\cygwin\bin\ls.exe'
     " ls command (default is UnxUtils because it is faster)
@@ -824,7 +899,7 @@ endif
 if has('Win32')
     " Cygwin grep command
     "let g:VeGrepCmdPath = 'c:\cygwin\bin\grep.exe'
-    let g:VeGrepCmdPath = 'C:\Usb\z_white\Apps\Portable\CmdUtils\grep.exe'
+    let g:VeGrepCmdPath = $vim . '\grep.exe'
 " Linux
 else
     let g:VeGrepCmdPath = 'grep'
@@ -872,17 +947,6 @@ nmap <silent> <leader>vh :exe 'VimExplorerT' \| exe 'VimExplorerS'<cr>
 nmap <silent> <leader>vf :exe 'VimExplorerT' \| exe 'VimExplorerV' \| exe 'VimExplorerS' \| wincmd l \| exe 'VimExplorerS'<cr>
 " Start vimExplorer with six panes (for file copy, move etc)
 nmap <silent> <leader>vx :exe 'VimExplorerT' \| exe 'VimExplorerV' \| exe 'VimExplorerS' \| exe 'VimExplorerS' \| wincmd l \| exe 'VimExplorerS' \| exe 'VimExplorerS'<cr>
-
-" Other suggested mappings to open vimExplorer in one key press (to put in this plugin or in your vimrc)
-" nmap <f2> :VimExplorerE<cr>
-" nmap <f3> :VimExplorerT<cr>
-" nmap <f4> :VimExplorerS<cr>
-" nmap <f5> :VimExplorerV<cr>
-" nmap <home> :VimExplorerE<cr>
-" nmap <PageUp> :VimExplorerT<cr>
-" nmap <PageDown> :exe 'VimExplorerT' \| exe 'VimExplorerV'<cr>
-" nmap <End> :exe 'VimExplorerT' \| exe 'VimExplorerV' \| exe 'VimExplorerS' \| wincmd l \| exe 'VimExplorerS'<cr>
-" nmap <s-home> :exe 'VimExplorerT' \| exe 'VimExplorerV' \| exe 'VimExplorerS' \| exe 'VimExplorerS' \| wincmd l \| exe 'VimExplorerS' \| exe 'VimExplorerS'<cr>
 
 " Open vimExplorer using a the current file's path {{{2
 
@@ -1140,7 +1204,7 @@ cal g:VeCommands.Run.Add(g:Item.New2('Step1', 'Run the file'))
 " Windows
 if has('Win32')
     " Start the command asynchronously and closes the black dos prompt windows that are opened, silent is used not to have to press a key to continue
-    cal g:VeCommands.Run.Step1.Add(g:Item.New2('Command', "cal g:VeGetPath() \| exe 'silent !start cmd /c %SelFullPath2B2Q%' \| exe 'silent !cmd /c taskkill /F /IM cmd.exe'"))
+    cal g:VeCommands.Run.Step1.Add(g:Item.New2('Command', "cal g:VeGetPath() \| exe 'silent !start cmd /c %SelFullPath2B2Q%' \| exe 'silent !cmd /c taskkill /F /IM cmd.exe' \| let g:VeSelectedFiles = g:Item.New1('SelectedFiles') \| cal g:VeLs()"))
 " Linux
 else
     " Not asynchronous for now
@@ -1152,11 +1216,11 @@ cal g:VeCommands.Run.Add(g:Item.New2('Step2', 'Run the file that is part of a re
 " Windows
 if has('Win32')
     " Start the command asynchronously and closes the black dos prompt windows that are opened, silent is used not to have to press a key to continue
-    cal g:VeCommands.Run.Step2.Add(g:Item.New2('Command', "cal g:VeGetPath() \| exe 'silent !start cmd /c %SelFullPath2B2Q%' \| exe 'silent !cmd /c taskkill /F /IM cmd.exe' \| let g:VeRecursive = '-R'"))
+    cal g:VeCommands.Run.Step2.Add(g:Item.New2('Command', "cal g:VeGetPath() \| exe 'silent !start cmd /c %SelFullPath2B2Q%' \| exe 'silent !cmd /c taskkill /F /IM cmd.exe' \| let g:VeRecursive = '-R' \| let g:VeSelectedFiles = g:Item.New1('SelectedFiles') \| cal g:VeLs()"))
 " Linux
 else
     " Not asynchronous for now
-    cal g:VeCommands.Run.Step2.Add(g:Item.New2('Command', "cal g:VeGetPath() \| system('%SelFullPathS2Q%') \| let g:VeRecursive = '-R'"))
+    cal g:VeCommands.Run.Step2.Add(g:Item.New2('Command', "cal g:VeGetPath() \| system('%SelFullPathS2Q%') \| let g:VeRecursive = '-R' \| let g:VeSelectedFiles = g:Item.New1('SelectedFiles') \| cal g:VeLs()"))
 endif
 cal g:VeCommands.Run.Step2.Add(g:Item.New2('PathSource', 'rf'))
 " Step3: Run the file that is a link {{{3
@@ -1164,11 +1228,11 @@ cal g:VeCommands.Run.Add(g:Item.New2('Step3', 'Run the file that is a link'))
 " Windows
 if has('Win32')
     " Start the command asynchronously and closes the black dos prompt windows that are opened, silent is used not to have to press a key to continue
-    cal g:VeCommands.Run.Step3.Add(g:Item.New2('Command', "cal g:VeGetPath() \| exe 'silent !start cmd /c %SelFullPath2B2Q%' \| exe 'silent !cmd /c taskkill /F /IM cmd.exe'"))
+    cal g:VeCommands.Run.Step3.Add(g:Item.New2('Command', "cal g:VeGetPath() \| exe 'silent !start cmd /c %SelFullPath2B2Q%' \| exe 'silent !cmd /c taskkill /F /IM cmd.exe' \| let g:VeSelectedFiles = g:Item.New1('SelectedFiles') \| cal g:VeLs()"))
 " Linux
 else
     " Not asynchronous for now
-    cal g:VeCommands.Run.Step3.Add(g:Item.New2('Command', "cal g:VeGetPath() \| system('%SelFullPathS2Q%')"))
+    cal g:VeCommands.Run.Step3.Add(g:Item.New2('Command', "cal g:VeGetPath() \| system('%SelFullPathS2Q%') \| let g:VeSelectedFiles = g:Item.New1('SelectedFiles') \| cal g:VeLs()"))
 endif
 cal g:VeCommands.Run.Step3.Add(g:Item.New2('PathSource', 'lf'))
 
@@ -1306,13 +1370,13 @@ fu! g:BuildWindow(winType)
     " <space>, Go to the end of the history list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>, to goto the directory.)
     nmap <silent> <buffer> <space>, :exe 'norm gg' \| cal search('History') \| exe 'norm $f[' \| norm ,<cr>
     " <space>1 Sort by name
-    nmap <silent> <buffer> <space>1 :let g:VeSort = '-U' \| let g:VeSortLabel = 'Name' \| cal g:VeLs()<cr> 
+    nmap <silent> <buffer> <space>1 :let g:VeSort = '-U' \| let g:VeSortLabel = 'Name' \| cal g:VeLs()<cr>
     " <space>2 Sort by type
-    nmap <silent> <buffer> <space>2 :let g:VeSort = '-X' \| let g:VeSortLabel = 'Type' \| cal g:VeLs()<cr> 
+    nmap <silent> <buffer> <space>2 :let g:VeSort = '-X' \| let g:VeSortLabel = 'Type' \| cal g:VeLs()<cr>
     " <space>3 Sort by size
-    nmap <silent> <buffer> <space>3 :let g:VeSort = '-S' \| let g:VeSortLabel = 'Size' \| cal g:VeLs()<cr> 
+    nmap <silent> <buffer> <space>3 :let g:VeSort = '-S' \| let g:VeSortLabel = 'Size' \| cal g:VeLs()<cr>
     " <space>4 Sort by date
-    nmap <silent> <buffer> <space>4 :let g:VeSort = '-t' \| let g:VeSortLabel = 'Date' \| cal g:VeLs()<cr> 
+    nmap <silent> <buffer> <space>4 :let g:VeSort = '-t' \| let g:VeSortLabel = 'Date' \| cal g:VeLs()<cr>
     " <space>a Go to the path at the top of the buffer to edit it. Press <space>l or <enter> (normal mode) to go the that path once edited.
     nmap <silent> <buffer> <space>a :exe 'norm gg' \| cal search('Path') \| exe 'norm f]h'<cr>
     " <space>b Add the directory to the favorites bar
@@ -1349,7 +1413,7 @@ fu! g:BuildWindow(winType)
     " <space>o Reload configuration from file (useful if the .config.vim file was edited manually and you want to reload it in the vimExplorer window that is currently opened)
     nmap <silent> <buffer> <space>O :cal g:VeLoadFromFile(0) \| echo 'Configuration loaded from: ' . g:VeCfgFile<cr>
     " <space>P Show current path
-    nmap <silent> <buffer> <space>P :pwd<cr> 
+    nmap <silent> <buffer> <space>P :pwd<cr>
     " <space>r Run the current file or the selected files
     nmap <silent> <buffer> <space>r :cal g:VeSelectFile('s') \| let g:VeCommandToRun = g:VeCommands.Run.Clone() \| cal g:VeRunCommand() \| let g:VeSelectedFiles = g:Item.New1('SelectedFiles')<cr>
     vmap <silent> <buffer> <space>r :cal g:VeSelectFile('t') \| let g:VeCommandToRun = g:VeCommands.Run.Clone() \| cal g:VeRunCommand() \| let g:VeSelectedFiles = g:Item.New1('SelectedFiles')<cr>
@@ -1371,29 +1435,29 @@ fu! g:BuildWindow(winType)
     " -- Mappings: Windows specific {{{1
     if has('Win32') == 1
         " <space>c Clone file
-        nmap <silent> <buffer> <space>c :cal g:VeGetPath() \| let t = g:VeFileName . '_' . substitute(strftime('%x_%X'), ':', '-', 'g') \| exe '!copy ' . g:VePaths.FileName2Q . ' "' . t . '"' \| cal g:VeLs() \| cal search(t)<cr>
+        nmap <silent> <buffer> <space>c :cal g:VeGetPath() \| let t = g:VeFileName . '_' . substitute(strftime('%x_%X'), ':', '-', 'g') \| cal system('copy ' . g:VePaths.FileName2Q . ' "' . t . '"') \| cal g:VeLs() \| cal search(t)<cr>
         " <space>C Open directory in shell
-        nmap <silent> <buffer> <space>C :exe '!cmd /k'<cr>
+        nmap <silent> <buffer> <space>C :silent exe '!start cmd /k'<cr>
         " <space>p Copy path to clipboard
         nmap <silent> <buffer> <space>p :cal g:VeGetPath() \| let @* = g:VePaths.FullPathB \| echo 'Path copied to clipboard: ' . g:VePaths.FullPathB \| echo ' Path source: ' . g:VePathSource<cr>
         " <space>R Rename file
-        nmap <silent> <buffer> <space>R :cal g:VeGetPath() \| unlet t \| let t = input('rename to: ', g:VeFileName) \| exe '!ren ' . g:VePaths.FileName2Q . ' "' . t . '"' \| cal g:VeLs() \| cal search(t)<cr>
+        nmap <silent> <buffer> <space>R :cal g:VeGetPath() \| unlet! t \| let t = input('rename to: ', g:VeFileName) \| cal system('ren ' . g:VePaths.FileName2Q . ' "' . t . '"') \| cal g:VeLs() \| cal search(t)<cr>
         " <space>x Open directory in windows explorer
         nmap <silent> <buffer> <space>x :cal g:VeGetPath() \| exe 'silent !start explorer.exe ' . g:VePaths.PathB2Q<cr>
         " <space>9 Change the ls command for "UnxUtils" ls command
-        nmap <silent> <buffer> <space>9 :let g:VeLsCmdPath = g:VeLsCmdPathU \| echo 'The current ls command is now the "UnxUtils" ls command.'<cr>
+        nmap <silent> <buffer> <space>9 :let g:VeLsCmdPath = g:VeLsCmdPathU \| cal g:VeLs()<cr>
         " <space>0 Change the ls command for "Cygwin" ls command
-        nmap <silent> <buffer> <space>0 :let g:VeLsCmdPath = g:VeLsCmdPathC \| echo 'The current ls command is now the "Cygwin" ls command.'<cr>
+        nmap <silent> <buffer> <space>0 :let g:VeLsCmdPath = g:VeLsCmdPathC \| cal g:VeLs()<cr>
     " -- Mappings: Linux specific {{{1
     else
         " <space>C Open directory in shell
         nmap <silent> <buffer> <space>C :sh<cr>") 
         " <space>c Clone file
-        nmap <silent> <buffer> <space>c :cal g:VeGetPath() \| let t = g:VeFileName . "_' . substitute(strftime('%x_%X'), ':', '-', 'g') \| exe '!cp ' . g:VePaths.FileName2Q . ' "' . t . '"' \| cal g:VeLs() \| cal search(t)<cr>
+        nmap <silent> <buffer> <space>c :cal g:VeGetPath() \| let t = g:VeFileName . '_' . substitute(strftime('%x_%X'), ':', '-', 'g') \| cal system('cp ' . g:VePaths.FileName2Q . ' "' . t . '"') \| cal g:VeLs() \| cal search(t)<cr>
         " <space>p Copy path
         nmap <silent> <buffer> <space>p :cal g:VeGetPath() \| let @* = g:VePaths.FullPathS \| echo "Path copied to clipboard: ' . g:VePaths.FullPathS<cr>') 
         " <space>R Rename file
-        nmap <silent> <buffer> <space>R :cal g:VeGetPath() \| unlet t \| let t = input("rename to: ', g:VeFileName) \| exe '! mv ' . g:VePaths.FileName2Q . ' "' . t . '"' \| cal g:VeLs() \| cal search(t)<cr>
+        nmap <silent> <buffer> <space>R :cal g:VeGetPath() \| unlet! t \| let t = input("rename to: ', g:VeFileName) \| cal system('mv ' . g:VePaths.FileName2Q . ' "' . t . '"') \| cal g:VeLs() \| cal search(t)<cr>
         " <space>x Open directory in thunar
         nmap <silent> <buffer> <space>x :cal g:VeGetPath() \| exe "silent !thunar ' . g:VePaths.PathS2Q<cr>
     endif
@@ -1421,8 +1485,6 @@ fu! g:BuildWindow(winType)
     " -- Mappings: File selection {{{1
     " <esc> Remove file selection
     nmap <silent><buffer> <esc> :let g:VeSelectedFiles = g:Item.New1('SelectedFiles') \| cal g:VeLs()<cr>
-    " <c-a> Select all files (do <c-c> to copy all these files for example, or <c-x> to cut (move) all these files, or <c-s> to add to selection for some action like to open them in a new tab etc)
-    nmap <silent> <buffer> <c-a> :exe 'norm GV' . g:VeGetDirectoryListLineNum() . 'G'<cr>
     " <c-c> Copy files, toggle select/deselect the file or files (if there are files selected in visual mode) and select the copy command as the command to run 
     nmap <silent> <buffer> <c-c> :cal g:VeSelectFile('t') \| let g:VeCommandToRun = g:VeCommands.Copy.Clone()<cr>
     vmap <silent> <buffer> <c-c> :cal g:VeSelectFile('t') \| let g:VeCommandToRun = g:VeCommands.Copy.Clone()<cr>
@@ -1433,7 +1495,7 @@ fu! g:BuildWindow(winType)
     nmap <silent> <buffer> <c-s> :cal g:VeSelectFile('t')<cr>
     vmap <silent> <buffer> <c-s> :cal g:VeSelectFile('t')<cr>
     " <c-v> Paste files, runCommands in the target window (usually a paste command which is the copy or move itself)
-    nmap <silent> <buffer> <c-v> :cal g:VeGetPath() \| cal g:VeRunCommand() \| let g:VeSelectedFiles = g:Item.New1('SelectedFiles') \| cal g:VeLs()<cr> 
+    nmap <silent> <buffer> <c-v> :cal g:VeGetPath() \| cal g:VeRunCommand() \| let g:VeSelectedFiles = g:Item.New1('SelectedFiles') \| cal g:VeLs()<cr>
     " <c-u> Run the user defined command (the user may set a command to it to run on the selected files) See section "How to run user-defined commands on selected files"
     nmap <silent> <buffer> <c-u> :VimExplorerUserCommand
 endfu
@@ -1505,7 +1567,7 @@ fu! s:ChangeDirectory(path)
     " Get real path from vim without /../.. etc
     let path = getcwd()
     " Change to the directory in shell
-    exe 'r! cd "' . path . '"'
+    cal system('cd "' . path . '"')
     " If the path is with "\" the change them for "/"
     if stridx(path, '\') != -1
         let path = substitute(path, '\', '/', 'g')
@@ -2134,7 +2196,14 @@ fu! g:VeRunCommand()
                 " Execute the command {{{7
                 " Leave this echo command, it shows a progression if there are many files to copy or move for example
                 "echo command
-                exe command
+                " For now the encoding used for shell commands is 'latin1' which supports french special characters like accents, that makes it possible to run commands or copy (etc) files that have these special characters in their path. But it is not possible for now to run commands on files with other characters than included in 'latin1' encoding, like russian characters, chinese characters etc You may change the 'latin1' by something else if you wish. If I find a solution that works universally for all languages, like the use of utf-8, I will do the modification for it.
+                " Windows
+                if has('Win32')
+                    exe iconv(command, &enc, 'latin1')
+                " Linux
+                else
+                    exe command
+                endif
                 " To show last command executed on selected files after the file listing {{{7
                 if s:ShowLastCommands == 1
                     cal add(g:Debug, 'Command: ' . command)
@@ -2197,7 +2266,15 @@ fu! g:VeRunCommand()
             " Execute the command {{{4
             " Leave this echo command, it shows a progression if there are many files to copy or move for example
             "echo command
-            exe command
+            "exe command
+            " For now the encoding used for shell commands is 'latin1' which supports french special characters like accents, that makes it possible to run commands or copy (etc) files that have these special characters in their path. But it is not possible for now to run commands on files with other characters than included in 'latin1' encoding, like russian characters, chinese characters etc You may change the 'latin1' by something else if you wish. If I find a solution that works universally for all languages, like the use of utf-8, I will do the modification for it.
+            " Windows
+            if has('Win32')
+                exe iconv(command, &enc, 'latin1')
+            " Linux
+            else
+                exe command
+            endif
             " To show last command executed on selected files after the file listing {{{7
             if s:ShowLastCommands == 1
                 cal add(g:Debug, 'Command: ' . command)
@@ -2247,7 +2324,7 @@ endfu
 
 " Functions: Utility {{{1
 
-" s:GetPathFormats(fullPath) {{{2
+" s:GetPathFormats(path, fileName) {{{2
 " Function to return a dictonnary containing a variety of path formats from a full path passed in parameters
 fu! s:GetPathFormats(path, fileName)
     " Formats dictionary to fill and return {{{3
@@ -2273,6 +2350,27 @@ fu! s:GetPathFormats(path, fileName)
         \, 'FullPath2B' : ''
         \, 'FullPath2BQ' : ''
         \, 'FullPath2B2Q' : ''
+        \, 'DosFileName' : ''
+        \, 'DosFileNameQ' : ''
+        \, 'DosFileName2Q' : ''
+        \, 'DosPathS' : ''
+        \, 'DosPathSQ' : ''
+        \, 'DosPathS2Q' : ''
+        \, 'DosFullPathS' : ''
+        \, 'DosFullPathSQ' : ''
+        \, 'DosFullPathS2Q' : ''
+        \, 'DosPathB' : ''
+        \, 'DosPathBQ' : ''
+        \, 'DosPathB2Q' : ''
+        \, 'DosFullPathB' : ''
+        \, 'DosFullPathBQ' : ''
+        \, 'DosFullPathB2Q' : ''
+        \, 'DosPath2B' : ''
+        \, 'DosPath2BQ' : ''
+        \, 'DosPath2B2Q' : ''
+        \, 'DosFullPath2B' : ''
+        \, 'DosFullPath2BQ' : ''
+        \, 'DosFullPath2B2Q' : ''
     \}
     " FileName {{{3
     let formats.FileName = a:fileName
@@ -2299,7 +2397,35 @@ fu! s:GetPathFormats(path, fileName)
     let formats.FullPath2B = formats.Path2B . '\\' . formats.FileName
     let formats.FullPath2BQ = "'" . formats.FullPath2B . "'"
     let formats.FullPath2B2Q = '"' . formats.FullPath2B . '"'
-    " Return {{{3
+    " Dos variants of paths containing a ~ if the directory or filename is longer than 8 characters
+    if has('Win32')
+        " DosFileName {{{3
+        let formats.DosFileName = fnamemodify(a:fileName, ":8")
+        let formats.DosFileNameQ = "'" . formats.FileName . "'"
+        let formats.DosFileName2Q = '"' . formats.FileName . '"'
+        " With / {{{3
+        let formats.DosPathS = fnamemodify(a:path, ":8")
+        let formats.DosPathSQ = "'" . formats.DosPathS . "'"
+        let formats.DosPathS2Q = '"' . formats.DosPathS . '"'
+        let formats.DosFullPathS = formats.DosPathS . '/' . formats.DosFileName
+        let formats.DosFullPathSQ = "'" . formats.DosFullPathS . "'"
+        let formats.DosFullPathS2Q = '"' . formats.DosFullPathS . '"'
+        " With \ {{{3
+        let formats.DosPathB = substitute(formats.DosPathS, '/', '\', 'g')
+        let formats.DosPathBQ = "'" . formats.DosPathB . "'"
+        let formats.DosPathB2Q = '"' . formats.DosPathB . '"'
+        let formats.DosFullPathB = formats.DosPathB . '\' . formats.DosFileName
+        let formats.DosFullPathBQ = "'" . formats.DosFullPathB . "'"
+        let formats.DosFullPathB2Q = '"' . formats.DosFullPathB . '"'
+        " With \\ {{{3
+        let formats.DosPath2B = substitute(formats.DosPathS, '/', '\\\\', 'g')
+        let formats.DosPath2BQ = "'" . formats.DosPath2B . "'"
+        let formats.DosPath2B2Q = '"' . formats.DosPath2B . '"'
+        let formats.DosFullPath2B = formats.DosPath2B . '\\' . formats.DosFileName
+        let formats.DosFullPath2BQ = "'" . formats.DosFullPath2B . "'"
+        let formats.DosFullPath2B2Q = '"' . formats.DosFullPath2B . '"'
+    endif
+     " Return {{{3
     return formats
 endfu
 
@@ -2365,5 +2491,5 @@ fu! g:VeSaveBar(barName)
         let g:VeCfg[a:barName].Value = bar
     endif
     " Go back to previous position
-	cal setpos('.', savedPosition)
+    cal setpos('.', savedPosition)
 endfu

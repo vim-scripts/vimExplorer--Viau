@@ -422,7 +422,7 @@ endfunction
 " Documentation {{{1
 
 " Name: vimExplorer.vim
-" Version: 2.2
+" Version: 2.3
 " Description: Explore directories quickly and operate on files.
 " Author: Alexandre Viau (alexandreviau@gmail.com)
 " Website: The latest version is found on "vim.org"
@@ -719,6 +719,11 @@ endfunction
 " Todo {{{2
 " Code organization {{{3
 " - Check if g:VeFileName occurences really could not be replaced by g:VePaths.FileName
+" - Maybe modify the function folds to do like this: fu! g:VeGotoMark(mark) " {{{2 instead of adding the full function name in comments above the function itself, thus if the parameter changed, I will not have to change the comment also.
+" - There was a some kind of bug in the g:VeLs() function, that the clear buffer statement was copying all the buffer into the paste register. I backed up the paste register before to execute that statement with 'let tmpReg = @"' then set back the paste buffer. To find a better solution when I have time. Here below is that code to do a better clear buffer:
+"       let tmpReg = @"
+"       norm ggVGd
+"       let @" = tmpReg
 " Documentation {{{3
 " - Add documentation about user-defined commands
 " Improvements to current features {{{3
@@ -735,6 +740,7 @@ endfunction
 " - Maybe add a function to collect words or strings from selected files, use the collect function from my vimrc and add a collect command
 "
 " Bugs {{{2
+" - If I have 3 split windows with vimExplorer in the middle, and I copy something in the top window, then I pass over the vimExplorer window to go to the bottom window (tab-j 2 times) then the content of the paste buffer is replaced by all the text in the vimExplorer window
 " - When opening grep results in new tabs, the g:VeCommandToRun object is used to open the selected files, so the previous g:veCommandToRun which contained the grep command results is replaced by the OpenInNewTab command, that is why when returning to the VimExplorer window after viewing executing this OpenInNewTab on grep results command the previous grep results are not there anymore. This is somehow a limitation, to overcome this there could be an array of g:VeCommandToRun for example, but for now to leave it like this. 
 " - When selected files from a recursive listing, if the same filenames appear in other subdirs they are also highlighted (but not added to selection) this is because the highlight is based on the filename... I'm not sure there may be a simple solution to this
 " - Cannot execute external commands (copy, delete, etc) on files that contains french accents for example or russian alphabet
@@ -743,6 +749,7 @@ endfunction
 " - In the sample user commands, the copy to clipboard even with many selected files copies only one file to clipboard (maybe put a <cr> after the command?)
 " - When opening a html file with \ww (in my vimrc) in vimExplorer, the color syntax seemed one time to change in the code...to test
 " - Cannot run commands on file written with the russian alphabet (see RunCommand() function, exe iconv(command, &enc, 'latin1')) This iconv() conversion works for french but not for russian (latin1 is also what is used in the shell (cp850) so there is not problem there, but with russian even by changing the shell with chcp 855 or chcp 866 and doing after the command with the russian name it dosen't work, for example echo system('chcp 855 & type "' . iconv('c:\temp\Copy of Новый текстовый документ.txt', &enc, 'cp855') . '"')
+" - I noticed that the regular expression in g:VeGetPath() function ('[0-9]\s\w\{3\}\s\(\s\|[0-9]\)[0-9]\s\([0-9][0-9]:[0-9][0-9]\|\s[0-9]\{4\}\)\s\zs.*') which gets the filename dosen't work for computers where the information in the listing like the user name or the month is written in russian like for example "drwxrwx---  1 Администратор          0 сен  8 10:13 colors" the "\w" in regular expression don't match characters in the russian alphabet. This seems like a vim limitation, I don't know yet how to solve this, maybe to change the code page of the shell with "chcp" before to issue the "ls" command (in Windows)... Maybe there are unicode matching characters in vim...
 " Annoyances {{{3
 " - Try to find way not to see the appearing/disapearing taskbar button when cal system('cd "' . path . '"') and exe 'silent r! ls.exe...' are executed
 " History {{{2
@@ -817,7 +824,9 @@ endfunction
 " - Removed file selections after executing the run command
 " - Removed the <c-a> mapping to select all files because it was selecting grep results also...
 " - changed the default paths for ls.exe and grep.exe from "UnxUtils", they are now in the "$vim" folder this as the benefit of making these command move with the vim folder, so they are always available where the vim folder is copied. This is for "UnxUtils" on Windows, it as no impact on Linux or on Windows if "Cygwin" is used.
-" - I changed the exe command for Windows in the RunCommand() function by exe iconv(command, &enc, 'latin1') to be able to run commands on file with french accents. In my tests I could do for files with russian alphabet echo system('type "' . iconv('c:\temp\Новый текстовый документ.txt', &enc, 'latin1') . '"') and the content of that file was echoed, but it dosen't work for the run command for example
+" - 23.01.2013 0:34:18 (Ñð) I changed the exe command for Windows in the RunCommand() function by exe iconv(command, &enc, 'latin1') to be able to run commands on file with french accents. In my tests I could do for files with russian alphabet echo system('type "' . iconv('c:\temp\Новый текстовый документ.txt', &enc, 'latin1') . '"') and the content of that file was echoed, but it dosen't work for the run command for example
+" 2.3 {{{3
+" There was a some kind of bug in the g:VeLs() function, that the clear buffer statement was copying all the buffer into the paste register. I backed up the paste register before to execute that statement with 'let tmpReg = @"' then set back the paste buffer. To find a better solution when I have time.
 "
 " Variables: Plugin {{{1
 
@@ -1745,7 +1754,9 @@ fu! g:VeLs()
         let g:VeRecursiveData = []
     endif
     " Clear buffer {{{3
+    let tmpReg = @"
     norm ggVGd
+    let @" = tmpReg
     " List the directory {{{3
     " If not root path c:\ or another root, add quotes. Root path quoted ("c:\") will give an error. 
     " Or if there is a filter, then don't put quotes, quotes don't work in a filter

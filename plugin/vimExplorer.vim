@@ -422,7 +422,7 @@ endfunction
 " Documentation {{{1
 
 " Name: vimExplorer.vim
-" Version: 2.3
+" Version: 2.4
 " Description: Explore directories quickly and operate on files.
 " Author: Alexandre Viau (alexandreviau@gmail.com)
 " Website: The latest version is found on "vim.org"
@@ -826,7 +826,9 @@ endfunction
 " - changed the default paths for ls.exe and grep.exe from "UnxUtils", they are now in the "$vim" folder this as the benefit of making these command move with the vim folder, so they are always available where the vim folder is copied. This is for "UnxUtils" on Windows, it as no impact on Linux or on Windows if "Cygwin" is used.
 " - 23.01.2013 0:34:18 (Ñð) I changed the exe command for Windows in the RunCommand() function by exe iconv(command, &enc, 'latin1') to be able to run commands on file with french accents. In my tests I could do for files with russian alphabet echo system('type "' . iconv('c:\temp\Новый текстовый документ.txt', &enc, 'latin1') . '"') and the content of that file was echoed, but it dosen't work for the run command for example
 " 2.3 {{{3
-" There was a some kind of bug in the g:VeLs() function, that the clear buffer statement was copying all the buffer into the paste register. I backed up the paste register before to execute that statement with 'let tmpReg = @"' then set back the paste buffer. To find a better solution when I have time.
+" - There was a some kind of bug in the g:VeLs() function, that the clear buffer statement was copying all the buffer into the paste register. I backed up the paste register before to execute that statement with 'let tmpReg = @"' then set back the paste buffer. To find a better solution when I have time.
+" 2.4 {{{3
+" - Copy and move etc in Linux now working, I modified the copy, move, delete etc. commands in linux to use forward slash '/'.
 "
 " Variables: Plugin {{{1
 
@@ -1046,19 +1048,19 @@ if has('Win32')
 else
     " Step1: Copy directories {{{4
     cal g:VeCommands.Copy.Add(g:Item.New2('Step1', 'Copy directories'))
-    cal g:VeCommands.Copy.Step1.Add(g:Item.New2('Command', "cal system('cp -rf %SelFullPath2B2Q% %CurPath2B2Q%')"))
+    cal g:VeCommands.Copy.Step1.Add(g:Item.New2('Command', "cal system('cp -rf %SelFullPathS2Q% %CurPathS2Q%')"))
     cal g:VeCommands.Copy.Step1.Add(g:Item.New2('PathSource', 'd'))
     " Step2: Copy files {{{4
     cal g:VeCommands.Copy.Add(g:Item.New2('Step2', 'Copy directories'))
-    cal g:VeCommands.Copy.Step2.Add(g:Item.New2('Command', "cal system('cp -f %SelFullPath2B2Q% %CurPath2B2Q%')"))
+    cal g:VeCommands.Copy.Step2.Add(g:Item.New2('Command', "cal system('cp -f %SelFullPathS2Q% %CurPathS2Q%')"))
     cal g:VeCommands.Copy.Step2.Add(g:Item.New2('PathSource', 'f'))
     " Step2: Copy recursive listing directories {{{4
     cal g:VeCommands.Copy.Add(g:Item.New2('Step2', 'Copy directories'))
-    cal g:VeCommands.Copy.Step2.Add(g:Item.New2('Command', "cal system('cp -rf %SelFullPath2B2Q% %CurPath2B2Q%')"))
+    cal g:VeCommands.Copy.Step2.Add(g:Item.New2('Command', "cal system('cp -rf %SelFullPathS2Q% %CurPathS2Q%')"))
     cal g:VeCommands.Copy.Step2.Add(g:Item.New2('PathSource', 'rd'))
     " Step3: Copy recursive listing files {{{4
     cal g:VeCommands.Copy.Add(g:Item.New2('Step3', 'Copy directories'))
-    cal g:VeCommands.Copy.Step3.Add(g:Item.New2('Command', "cal system('cp -f %SelFullPath2B2Q% %CurPath2B2Q%')"))
+    cal g:VeCommands.Copy.Step3.Add(g:Item.New2('Command', "cal system('cp -f %SelFullPathS2Q% %CurPathS2Q%')"))
     cal g:VeCommands.Copy.Step3.Add(g:Item.New2('PathSource', 'rf'))
 endif
 
@@ -1088,19 +1090,19 @@ if has('Win32')
 else
     " Step1: Move directories {{{4
     cal g:VeCommands.Move.Add(g:Item.New2('Step1', 'Move directories'))
-    cal g:VeCommands.Move.Step1.Add(g:Item.New2('Command', "cal system('mv %SelFullPath2B2Q% %CurPath2B2Q%')"))
+    cal g:VeCommands.Move.Step1.Add(g:Item.New2('Command', "cal system('mv %SelFullPathS2Q% %CurPathS2Q%')"))
     cal g:VeCommands.Move.Step1.Add(g:Item.New2('PathSource', 'd'))
     " Step2: Move files {{{4
     cal g:VeCommands.Move.Add(g:Item.New2('Step2', 'Move files'))
-    cal g:VeCommands.Move.Step2.Add(g:Item.New2('Command', "cal system('mv %SelFullPath2B2Q% %CurPath2B2Q%')"))
+    cal g:VeCommands.Move.Step2.Add(g:Item.New2('Command', "cal system('mv %SelFullPathS2Q% %CurPathS2Q%')"))
     cal g:VeCommands.Move.Step2.Add(g:Item.New2('PathSource', 'f'))
     " Step3: Move recursive listing directories {{{4
     cal g:VeCommands.Move.Add(g:Item.New2('Step3', 'Move recursive listing directories'))
-    cal g:VeCommands.Move.Step3.Add(g:Item.New2('Command', "cal system('mv %SelFullPath2B2Q% %CurPath2B2Q%')"))
+    cal g:VeCommands.Move.Step3.Add(g:Item.New2('Command', "cal system('mv %SelFullPathS2Q% %CurPathS2Q%')"))
     cal g:VeCommands.Move.Step3.Add(g:Item.New2('PathSource', 'rd'))
     " Step4: Move recursive listing files {{{4
     cal g:VeCommands.Move.Add(g:Item.New2('Step4', 'Move recursive listing files'))
-    cal g:VeCommands.Move.Step4.Add(g:Item.New2('Command', "cal system('mv %SelFullPath2B2Q% %CurPath2B2Q%')"))
+    cal g:VeCommands.Move.Step4.Add(g:Item.New2('Command', "cal system('mv %SelFullPathS2Q% %CurPathS2Q%')"))
     cal g:VeCommands.Move.Step4.Add(g:Item.New2('PathSource', 'rf'))
 endif
 
@@ -1130,19 +1132,19 @@ if has('Win32')
 else
     " Step1: Delete directories {{{4
     cal g:VeCommands.Delete.Add(g:Item.New2('Step1', 'Delete directories'))
-    cal g:VeCommands.Delete.Step1.Add(g:Item.New2('Command', "cal system('rm -rf %SelFullPath2B2Q%')"))
+    cal g:VeCommands.Delete.Step1.Add(g:Item.New2('Command', "cal system('rm -rf %SelFullPathS2Q%')"))
     cal g:VeCommands.Delete.Step1.Add(g:Item.New2('PathSource', 'd'))
     " Step2: Delete files {{{4
     cal g:VeCommands.Delete.Add(g:Item.New2('Step2', 'Delete files'))
-    cal g:VeCommands.Delete.Step2.Add(g:Item.New2('Command', "cal system('rm -f %SelFullPath2B2Q%')"))
+    cal g:VeCommands.Delete.Step2.Add(g:Item.New2('Command', "cal system('rm -f %SelFullPathS2Q%')"))
     cal g:VeCommands.Delete.Step2.Add(g:Item.New2('PathSource', 'f'))
     " Step3: Delete recursive listing directories {{{4
     cal g:VeCommands.Delete.Add(g:Item.New2('Step3', 'Delete recursive listing directories'))
-    cal g:VeCommands.Delete.Step3.Add(g:Item.New2('Command', "cal system('rm -rf %SelFullPath2B2Q%') \| let g:VeRecursive = '-R'"))
+    cal g:VeCommands.Delete.Step3.Add(g:Item.New2('Command', "cal system('rm -rf %SelFullPathS2Q%') \| let g:VeRecursive = '-R'"))
     cal g:VeCommands.Delete.Step3.Add(g:Item.New2('PathSource', 'rd'))
     " Step4: Delete recursive listing files {{{4
     cal g:VeCommands.Delete.Add(g:Item.New2('Step4', 'Delete recursive listing files'))
-    cal g:VeCommands.Delete.Step4.Add(g:Item.New2('Command', "cal system('rm -f %SelFullPath2B2Q%') \| let g:VeRecursive = '-R'"))
+    cal g:VeCommands.Delete.Step4.Add(g:Item.New2('Command', "cal system('rm -f %SelFullPathS2Q%') \| let g:VeRecursive = '-R'"))
     cal g:VeCommands.Delete.Step4.Add(g:Item.New2('PathSource', 'rf'))
 endif
 

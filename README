@@ -3,7 +3,7 @@ This is a mirror of http://www.vim.org/scripts/script.php?script_id=4360
 Documentation 
 
 Name: vimExplorer.vim
-Version: 2.4
+Version: 2.5.2
 Description: Explore directories quickly and operate on files.
 Author: Alexandre Viau (alexandreviau@gmail.com)
 Website: The latest version is found on "vim.org"
@@ -75,7 +75,7 @@ NOTE: 1. You may write or edit a path manually in the "Path: " bar at the top of
 Browsing history 
 
 <space>l or <enter> Go to one of the history path shown at the top of the buffer, put cursor on one of the paths and execute this mapping.
-<space>; Go to the history list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>; to goto the directory.)
+<space>; Go to the history list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>l or <enter> to goto the directory.)
 <space>, Go to the end of the history list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>, to goto the directory.)
 <space>H Delete the browsing history
 NOTE: 1. You may edit the history bar at the top of the buffer, you may add, remove or move paths on this line, it will be saved automatically when changing directory or doing <space>s to save the configuration or when vim quits if the cursor is in a vimExplorer window.
@@ -97,6 +97,7 @@ Directory favorites
 
 <space>b Add the path to the favorites bar
 <space>B Add the full path with the filename to the favorites bar (this allows to add "shortcuts" to files to run a file or to open a file)
+<space>: Go to the favorites list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>l or <enter>to goto the directory.)
 NOTE: 1. The favorites bar is another way of bookmarking directories. It is independant from the directory bookmarks (marks) showned above. It is a feature on its own.
       2. You may edit the favorites bar at the top of the buffer, you may add, remove or move paths on this line, it will be saved automatically when changing directory or doing <space>s to save the configuration or when vim quits if the cursor is in a vimExplorer window.
       3. Some file operations mappings work with the links in these favorites links for example: <space>t to open in new tab, <space>r to run, <space>x to open in external filemanager (check the "File operations" below)
@@ -300,9 +301,16 @@ Tips
 Todo 
 Code organization 
 - Check if g:VeFileName occurences really could not be replaced by g:VePaths.FileName
+- Maybe modify the function folds to do like this: fu! g:VeGotoMark(mark) " {{2 instead of adding the full function name in comments above the function itself, thus if the parameter changed, I will not have to change the comment also.
+- There was a some kind of bug in the g:VeLs() function, that the clear buffer statement was copying all the buffer into the paste register. I backed up the paste register before to execute that statement with 'let tmpReg = @"' then set back the paste buffer. To find a better solution when I have time. Here below is that code to do a better clear buffer:
+      let tmpReg = @"
+      norm ggVGd
+      let @" = tmpReg
 Documentation 
 - Add documentation about user-defined commands
 Improvements to current features 
+- 07.02.2013 23:15:42 (×ò) The favorites should not contain links in double
+- The filter dosen't work after a recursive listing example <space>L on c:\temp then do "f" *.vim, only the current dir will be filtered, this is maybe because the results of a recursive listing are kept in memory when a directory dosen't change but an operation is done on it. To filter recursive results would be some kind of way of searching for files... maybe to refresh directory if a filter is done but to use memorized recursive listing for other operations...
 - Add pathsources that the user commands can be run onto
 - There are several modifications that could be done to the commands on selected files: grep recursive file/directories results, user command to execute on recursive directories/files and on grep results
 - Improve the run command to make it run asynchronously if possible in Linux
@@ -316,6 +324,9 @@ New features
 - Maybe add a function to collect words or strings from selected files, use the collect function from my vimrc and add a collect command
 
 Bugs 
+- 07.02.2013 23:15:49 (×ò) There seems to be a problem when doing <space>r on a file with apostrophes (') in the path
+- 07.02.2013 23:15:51 (×ò) Cannot copy a file to a directory where there is a (') in the path (check also for move and other operations like delete etc which dosen't work when there is apostrophe), the solution I have is to add "cal g:VeCommands.Copy.Add(g:Item.New2('DblPathQuotes', 1))" to the command that need the quotes to be doubled, and continue in the g:VeRunCommand() function to add conditions to double the quotes (see where I use that variable DblPathQuotes in g:VeRunCommand(), make it work for exerunfiles 1 et 0)
+- Sometimes there is garbage from copy/paste registers that come to replace the favorites in the favorites bar...I don't know what happen there.
 - When opening grep results in new tabs, the g:VeCommandToRun object is used to open the selected files, so the previous g:veCommandToRun which contained the grep command results is replaced by the OpenInNewTab command, that is why when returning to the VimExplorer window after viewing executing this OpenInNewTab on grep results command the previous grep results are not there anymore. This is somehow a limitation, to overcome this there could be an array of g:VeCommandToRun for example, but for now to leave it like this. 
 - When selected files from a recursive listing, if the same filenames appear in other subdirs they are also highlighted (but not added to selection) this is because the highlight is based on the filename... I'm not sure there may be a simple solution to this
 - Cannot execute external commands (copy, delete, etc) on files that contains french accents for example or russian alphabet
@@ -324,6 +335,8 @@ Bugs
 - In the sample user commands, the copy to clipboard even with many selected files copies only one file to clipboard (maybe put a <cr> after the command?)
 - When opening a html file with \ww (in my vimrc) in vimExplorer, the color syntax seemed one time to change in the code...to test
 - Cannot run commands on file written with the russian alphabet (see RunCommand() function, exe iconv(command, &enc, 'latin1')) This iconv() conversion works for french but not for russian (latin1 is also what is used in the shell (cp850) so there is not problem there, but with russian even by changing the shell with chcp 855 or chcp 866 and doing after the command with the russian name it dosen't work, for example echo system('chcp 855 & type "' . iconv('c:\temp\Copy of Новый текстовый документ.txt', &enc, 'cp855') . '"')
+- I noticed that the regular expression in g:VeGetPath() function ('[0-9]\s\w\{3\}\s\(\s\|[0-9]\)[0-9]\s\([0-9][0-9]:[0-9][0-9]\|\s[0-9]\{4\}\)\s\zs.*') which gets the filename dosen't work for computers where the information in the listing like the user name or the month is written in russian like for example "drwxrwx---  1 Администратор          0 сен  8 10:13 colors" the "\w" in regular expression don't match characters in the russian alphabet. This seems like a vim limitation, I don't know yet how to solve this, maybe to change the code page of the shell with "chcp" before to issue the "ls" command (in Windows)... Maybe there are unicode matching characters in vim...
+- When using ctrl-i to return to next position in the buffer, there is a latence, like if vim was waiting for another key input like if it was using in another mapping
 Annoyances 
 - Try to find way not to see the appearing/disapearing taskbar button when cal system('cd "' . path . '"') and exe 'silent r! ls.exe...' are executed
 History 
@@ -380,7 +393,7 @@ History
 - Added selection of items in the links bar
 2.1 
 - Added "silent" to the <space>x mappings
-- Corrected bug in the s:SetCursorPos(path) (to exit if there are no path)
+- Corrected bug in the g:VeSetCursorPos(path) (to exit if there are no path)
 - Did testing when there are no VimExplorer.xml file
 - Change suggested mappings (commented out) (f2, f3, ..., Home, PageUp, etc)
 - Modified the installation instructions to indicated that if you use the plugin in Windows, you will have to change the value of the "g:VeLsCmdPath" to that of the path where your ls command is located. Search for the variable using: /let g:VeLsCmdPath
@@ -398,8 +411,19 @@ History
 - Removed file selections after executing the run command
 - Removed the <c-a> mapping to select all files because it was selecting grep results also...
 - changed the default paths for ls.exe and grep.exe from "UnxUtils", they are now in the "$vim" folder this as the benefit of making these command move with the vim folder, so they are always available where the vim folder is copied. This is for "UnxUtils" on Windows, it as no impact on Linux or on Windows if "Cygwin" is used.
-- I changed the exe command for Windows in the RunCommand() function by exe iconv(command, &enc, 'latin1') to be able to run commands on file with french accents. In my tests I could do for files with russian alphabet echo system('type "' . iconv('c:\temp\Новый текстовый документ.txt', &enc, 'latin1') . '"') and the content of that file was echoed, but it dosen't work for the run command for example
-2.3
+- 23.01.2013 0:34:18 (Ñð) I changed the exe command for Windows in the RunCommand() function by exe iconv(command, &enc, 'latin1') to be able to run commands on file with french accents. In my tests I could do for files with russian alphabet echo system('type "' . iconv('c:\temp\Новый текстовый документ.txt', &enc, 'latin1') . '"') and the content of that file was echoed, but it dosen't work for the run command for example
+2.3 
 - There was a some kind of bug in the g:VeLs() function, that the clear buffer statement was copying all the buffer into the paste register. I backed up the paste register before to execute that statement with 'let tmpReg = @"' then set back the paste buffer. To find a better solution when I have time.
-2.4
+2.4 
 - Copy and move etc in Linux now working, I modified the copy, move, delete etc. commands in linux to use forward slash '/'.
+2.5 
+- Correction to the <space>r command (run selected files) which was not keeping cursor position and also there was a bug when running multiple files, the reinitialization was in the command step so reinitializing the selected file list after running the first command, but now it is reinitialized after the call to g:VeRunCommand(), also the set cursor position is set before doing a call to g:VeLs() after the call to g:VeRunCommand()
+- Added <space>: To go to the favorites list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>l or <enter>to goto the directory.)
+- Corrected copy, move, delete, run etc commands by doubling the quotes found in the paths, because the command is delimited by single quotes, they had to be doubled or a error was occuring if the path contained single quotes.
+2.5.1
+- Small correction with opening grep results in new tab when there is a single quote (or several) somewhere in the path
+2.5.2
+- I removed a echo placed for debugging purposes that caused the "press any key" message to show
+
+
+

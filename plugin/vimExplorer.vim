@@ -422,7 +422,7 @@ endfunction
 " Documentation {{{1
 
 " Name: vimExplorer.vim
-" Version: 2.4
+" Version: 2.5
 " Description: Explore directories quickly and operate on files.
 " Author: Alexandre Viau (alexandreviau@gmail.com)
 " Website: The latest version is found on "vim.org"
@@ -494,7 +494,7 @@ endfunction
 " Browsing history {{{4
 "
 " <space>l or <enter> Go to one of the history path shown at the top of the buffer, put cursor on one of the paths and execute this mapping.
-" <space>; Go to the history list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>; to goto the directory.)
+" <space>; Go to the history list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>l or <enter> to goto the directory.)
 " <space>, Go to the end of the history list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>, to goto the directory.)
 " <space>H Delete the browsing history
 " NOTE: 1. You may edit the history bar at the top of the buffer, you may add, remove or move paths on this line, it will be saved automatically when changing directory or doing <space>s to save the configuration or when vim quits if the cursor is in a vimExplorer window.
@@ -516,6 +516,7 @@ endfunction
 "
 " <space>b Add the path to the favorites bar
 " <space>B Add the full path with the filename to the favorites bar (this allows to add "shortcuts" to files to run a file or to open a file)
+" <space>: Go to the favorites list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>l or <enter>to goto the directory.)
 " NOTE: 1. The favorites bar is another way of bookmarking directories. It is independant from the directory bookmarks (marks) showned above. It is a feature on its own.
 "       2. You may edit the favorites bar at the top of the buffer, you may add, remove or move paths on this line, it will be saved automatically when changing directory or doing <space>s to save the configuration or when vim quits if the cursor is in a vimExplorer window.
 "       3. Some file operations mappings work with the links in these favorites links for example: <space>t to open in new tab, <space>r to run, <space>x to open in external filemanager (check the "File operations" below)
@@ -719,7 +720,7 @@ endfunction
 " Todo {{{2
 " Code organization {{{3
 " - Check if g:VeFileName occurences really could not be replaced by g:VePaths.FileName
-" - Maybe modify the function folds to do like this: fu! g:VeGotoMark(mark) " {{{2 instead of adding the full function name in comments above the function itself, thus if the parameter changed, I will not have to change the comment also.
+" - Maybe modify the function folds to do like this: fu! g:VeGotoMark(mark) " {{2 instead of adding the full function name in comments above the function itself, thus if the parameter changed, I will not have to change the comment also.
 " - There was a some kind of bug in the g:VeLs() function, that the clear buffer statement was copying all the buffer into the paste register. I backed up the paste register before to execute that statement with 'let tmpReg = @"' then set back the paste buffer. To find a better solution when I have time. Here below is that code to do a better clear buffer:
 "       let tmpReg = @"
 "       norm ggVGd
@@ -727,6 +728,8 @@ endfunction
 " Documentation {{{3
 " - Add documentation about user-defined commands
 " Improvements to current features {{{3
+" - 07.02.2013 23:15:42 (×ò) The favorites should not contain links in double
+" - The filter dosen't work after a recursive listing example <space>L on c:\temp then do "f" *.vim, only the current dir will be filtered, this is maybe because the results of a recursive listing are kept in memory when a directory dosen't change but an operation is done on it. To filter recursive results would be some kind of way of searching for files... maybe to refresh directory if a filter is done but to use memorized recursive listing for other operations...
 " - Add pathsources that the user commands can be run onto
 " - There are several modifications that could be done to the commands on selected files: grep recursive file/directories results, user command to execute on recursive directories/files and on grep results
 " - Improve the run command to make it run asynchronously if possible in Linux
@@ -740,7 +743,9 @@ endfunction
 " - Maybe add a function to collect words or strings from selected files, use the collect function from my vimrc and add a collect command
 "
 " Bugs {{{2
-" - If I have 3 split windows with vimExplorer in the middle, and I copy something in the top window, then I pass over the vimExplorer window to go to the bottom window (tab-j 2 times) then the content of the paste buffer is replaced by all the text in the vimExplorer window
+" - 07.02.2013 23:15:49 (×ò) There seems to be a problem when doing <space>r on a file with apostrophes (') in the path
+" - 07.02.2013 23:15:51 (×ò) Cannot copy a file to a directory where there is a (') in the path (check also for move and other operations like delete etc which dosen't work when there is apostrophe), the solution I have is to add "cal g:VeCommands.Copy.Add(g:Item.New2('DblPathQuotes', 1))" to the command that need the quotes to be doubled, and continue in the g:VeRunCommand() function to add conditions to double the quotes (see where I use that variable DblPathQuotes in g:VeRunCommand(), make it work for exerunfiles 1 et 0)
+" - Sometimes there is garbage from copy/paste registers that come to replace the favorites in the favorites bar...I don't know what happen there.
 " - When opening grep results in new tabs, the g:VeCommandToRun object is used to open the selected files, so the previous g:veCommandToRun which contained the grep command results is replaced by the OpenInNewTab command, that is why when returning to the VimExplorer window after viewing executing this OpenInNewTab on grep results command the previous grep results are not there anymore. This is somehow a limitation, to overcome this there could be an array of g:VeCommandToRun for example, but for now to leave it like this. 
 " - When selected files from a recursive listing, if the same filenames appear in other subdirs they are also highlighted (but not added to selection) this is because the highlight is based on the filename... I'm not sure there may be a simple solution to this
 " - Cannot execute external commands (copy, delete, etc) on files that contains french accents for example or russian alphabet
@@ -750,6 +755,7 @@ endfunction
 " - When opening a html file with \ww (in my vimrc) in vimExplorer, the color syntax seemed one time to change in the code...to test
 " - Cannot run commands on file written with the russian alphabet (see RunCommand() function, exe iconv(command, &enc, 'latin1')) This iconv() conversion works for french but not for russian (latin1 is also what is used in the shell (cp850) so there is not problem there, but with russian even by changing the shell with chcp 855 or chcp 866 and doing after the command with the russian name it dosen't work, for example echo system('chcp 855 & type "' . iconv('c:\temp\Copy of Новый текстовый документ.txt', &enc, 'cp855') . '"')
 " - I noticed that the regular expression in g:VeGetPath() function ('[0-9]\s\w\{3\}\s\(\s\|[0-9]\)[0-9]\s\([0-9][0-9]:[0-9][0-9]\|\s[0-9]\{4\}\)\s\zs.*') which gets the filename dosen't work for computers where the information in the listing like the user name or the month is written in russian like for example "drwxrwx---  1 Администратор          0 сен  8 10:13 colors" the "\w" in regular expression don't match characters in the russian alphabet. This seems like a vim limitation, I don't know yet how to solve this, maybe to change the code page of the shell with "chcp" before to issue the "ls" command (in Windows)... Maybe there are unicode matching characters in vim...
+" - When using ctrl-i to return to next position in the buffer, there is a latence, like if vim was waiting for another key input like if it was using in another mapping
 " Annoyances {{{3
 " - Try to find way not to see the appearing/disapearing taskbar button when cal system('cd "' . path . '"') and exe 'silent r! ls.exe...' are executed
 " History {{{2
@@ -806,7 +812,7 @@ endfunction
 " - Added selection of items in the links bar
 " 2.1 {{{3
 " - Added "silent" to the <space>x mappings
-" - Corrected bug in the s:SetCursorPos(path) (to exit if there are no path)
+" - Corrected bug in the g:VeSetCursorPos(path) (to exit if there are no path)
 " - Did testing when there are no VimExplorer.xml file
 " - Change suggested mappings (commented out) (f2, f3, ..., Home, PageUp, etc)
 " - Modified the installation instructions to indicated that if you use the plugin in Windows, you will have to change the value of the "g:VeLsCmdPath" to that of the path where your ls command is located. Search for the variable using: /let g:VeLsCmdPath
@@ -829,6 +835,10 @@ endfunction
 " - There was a some kind of bug in the g:VeLs() function, that the clear buffer statement was copying all the buffer into the paste register. I backed up the paste register before to execute that statement with 'let tmpReg = @"' then set back the paste buffer. To find a better solution when I have time.
 " 2.4 {{{3
 " - Copy and move etc in Linux now working, I modified the copy, move, delete etc. commands in linux to use forward slash '/'.
+" 2.5 {{{3
+" - Correction to the <space>r command (run selected files) which was not keeping cursor position and also there was a bug when running multiple files, the reinitialization was in the command step so reinitializing the selected file list after running the first command, but now it is reinitialized after the call to g:VeRunCommand(), also the set cursor position is set before doing a call to g:VeLs() after the call to g:VeRunCommand()
+" - Added <space>: To go to the favorites list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>l or <enter>to goto the directory.)
+" - Corrected copy, move, delete, run etc commands by doubling the quotes found in the paths, because the command is delimited by single quotes, they had to be doubled or a error was occuring if the path contained single quotes.
 "
 " Variables: Plugin {{{1
 
@@ -1018,6 +1028,8 @@ command! -nargs=0 VimExplorerUC cal g:VeSelectFile('s') | let g:VeCommandToRun =
 cal g:VeCommands.Add(g:Item.New1('Copy'))
 " Execute the command for each file in the selection
 cal g:VeCommands.Copy.Add(g:Item.New2('ExeForEachFile', 1))
+" Double the single quotes in the paths
+cal g:VeCommands.Copy.Add(g:Item.New2('DblPathQuotes', 1))
 " Windows {{{3
 if has('Win32')
     " Step1: Create destination directories {{{4
@@ -1068,6 +1080,8 @@ endif
 cal g:VeCommands.Add(g:Item.New1('Move'))
 " Execute the command for each file in the selection
 cal g:VeCommands.Move.Add(g:Item.New2('ExeForEachFile', 1))
+" Double the single quotes in the paths
+cal g:VeCommands.Move.Add(g:Item.New2('DblPathQuotes', 1))
 " Windows {{{3
 if has('Win32')
     " Step1: Move directories {{{4
@@ -1110,6 +1124,8 @@ endif
 cal g:VeCommands.Add(g:Item.New1('Delete'))
 " Execute the command for each file in the selection
 cal g:VeCommands.Delete.Add(g:Item.New2('ExeForEachFile', 1))
+" Double the single quotes in the paths
+cal g:VeCommands.Delete.Add(g:Item.New2('DblPathQuotes', 1))
 " Windows {{{3
 if has('Win32')
     " Step1: Delete directories {{{4
@@ -1156,6 +1172,8 @@ cal g:VeCommands.Grep.Add(g:Item.New2('ExeForEachFile', 0))
 cal g:VeCommands.Grep.Add(g:Item.New1('PathWhereExe'))
 " Show results after changing directory
 cal g:VeCommands.Grep.Add(g:Item.New2('AfterCdShowResults', 0))
+" Double the single quotes in the paths
+cal g:VeCommands.Grep.Add(g:Item.New2('DblPathQuotes', 1))
 " Step1: Grep the selected files {{{4
 cal g:VeCommands.Grep.Add(g:Item.New2('Step1', 'Grep the selected files'))
 cal g:VeCommands.Grep.Step1.Add(g:Item.New2('Command', "let g:VeCommandToRun.Step1.Result.Value .= system('" . g:VeGrepCmdPath . " -n -i -H \"%Keywords%\" %SelFileName2Q%')"))
@@ -1171,6 +1189,8 @@ cal g:VeCommands.Grep.Step2.Add(g:Item.New2('PathSource', 'd'))
 cal g:VeCommands.Add(g:Item.New1('OpenInNewTab'))
 " Execute the command for each file in the selection
 cal g:VeCommands.OpenInNewTab.Add(g:Item.New2('ExeForEachFile', 1))
+" Double the single quotes in the paths
+cal g:VeCommands.OpenInNewTab.Add(g:Item.New2('DblPathQuotes', 0))
 " Step1: Open files in new tab {{{3
 cal g:VeCommands.OpenInNewTab.Add(g:Item.New2('Step1', 'Open files in new tab'))
 cal g:VeCommands.OpenInNewTab.Step1.Add(g:Item.New2('Command', "tabe %SelFullPathS%"))
@@ -1210,16 +1230,18 @@ cal g:VeCommands.OpenInNewTab.Step8.Add(g:Item.New2('PathSource', 'ld'))
 cal g:VeCommands.Add(g:Item.New1('Run'))
 " Execute the command for each file in the selection
 cal g:VeCommands.Run.Add(g:Item.New2('ExeForEachFile', 1))
+" Double the single quotes in the paths
+cal g:VeCommands.Run.Add(g:Item.New2('DblPathQuotes', 1))
 " Step1: Run the file {{{3
 cal g:VeCommands.Run.Add(g:Item.New2('Step1', 'Run the file'))
 " Windows
 if has('Win32')
     " Start the command asynchronously and closes the black dos prompt windows that are opened, silent is used not to have to press a key to continue
-    cal g:VeCommands.Run.Step1.Add(g:Item.New2('Command', "cal g:VeGetPath() \| exe 'silent !start cmd /c %SelFullPath2B2Q%' \| exe 'silent !cmd /c taskkill /F /IM cmd.exe' \| let g:VeSelectedFiles = g:Item.New1('SelectedFiles') \| cal g:VeLs()"))
+    cal g:VeCommands.Run.Step1.Add(g:Item.New2('Command', "exe 'silent !start cmd /c %SelFullPath2B2Q%' \| exe 'silent !cmd /c taskkill /F /IM cmd.exe'"))
 " Linux
 else
     " Not asynchronous for now
-    cal g:VeCommands.Run.Step1.Add(g:Item.New2('Command', "cal g:VeGetPath() \| system('%SelFullPathS2Q%')"))
+    cal g:VeCommands.Run.Step1.Add(g:Item.New2('Command', "system('%SelFullPathS2Q%')"))
 endif
 cal g:VeCommands.Run.Step1.Add(g:Item.New2('PathSource', 'f'))
 " Step2: Run the file that is part of a recursive listing {{{3
@@ -1227,11 +1249,11 @@ cal g:VeCommands.Run.Add(g:Item.New2('Step2', 'Run the file that is part of a re
 " Windows
 if has('Win32')
     " Start the command asynchronously and closes the black dos prompt windows that are opened, silent is used not to have to press a key to continue
-    cal g:VeCommands.Run.Step2.Add(g:Item.New2('Command', "cal g:VeGetPath() \| exe 'silent !start cmd /c %SelFullPath2B2Q%' \| exe 'silent !cmd /c taskkill /F /IM cmd.exe' \| let g:VeRecursive = '-R' \| let g:VeSelectedFiles = g:Item.New1('SelectedFiles') \| cal g:VeLs()"))
+    cal g:VeCommands.Run.Step2.Add(g:Item.New2('Command', "cal g:VeGetPath() \| exe 'silent !start cmd /c %SelFullPath2B2Q%' \| exe 'silent !cmd /c taskkill /F /IM cmd.exe' \| let g:VeRecursive = '-R'"))
 " Linux
 else
     " Not asynchronous for now
-    cal g:VeCommands.Run.Step2.Add(g:Item.New2('Command', "cal g:VeGetPath() \| system('%SelFullPathS2Q%') \| let g:VeRecursive = '-R' \| let g:VeSelectedFiles = g:Item.New1('SelectedFiles') \| cal g:VeLs()"))
+    cal g:VeCommands.Run.Step2.Add(g:Item.New2('Command', "cal g:VeGetPath() \| system('%SelFullPathS2Q%') \| let g:VeRecursive = '-R'"))
 endif
 cal g:VeCommands.Run.Step2.Add(g:Item.New2('PathSource', 'rf'))
 " Step3: Run the file that is a link {{{3
@@ -1239,11 +1261,11 @@ cal g:VeCommands.Run.Add(g:Item.New2('Step3', 'Run the file that is a link'))
 " Windows
 if has('Win32')
     " Start the command asynchronously and closes the black dos prompt windows that are opened, silent is used not to have to press a key to continue
-    cal g:VeCommands.Run.Step3.Add(g:Item.New2('Command', "cal g:VeGetPath() \| exe 'silent !start cmd /c %SelFullPath2B2Q%' \| exe 'silent !cmd /c taskkill /F /IM cmd.exe' \| let g:VeSelectedFiles = g:Item.New1('SelectedFiles') \| cal g:VeLs()"))
+    cal g:VeCommands.Run.Step3.Add(g:Item.New2('Command', "cal g:VeGetPath() \| exe 'silent !start cmd /c %SelFullPath2B2Q%' \| exe 'silent !cmd /c taskkill /F /IM cmd.exe'"))
 " Linux
 else
     " Not asynchronous for now
-    cal g:VeCommands.Run.Step3.Add(g:Item.New2('Command', "cal g:VeGetPath() \| system('%SelFullPathS2Q%') \| let g:VeSelectedFiles = g:Item.New1('SelectedFiles') \| cal g:VeLs()"))
+    cal g:VeCommands.Run.Step3.Add(g:Item.New2('Command', "cal g:VeGetPath() \| system('%SelFullPathS2Q%')"))
 endif
 cal g:VeCommands.Run.Step3.Add(g:Item.New2('PathSource', 'lf'))
 
@@ -1251,6 +1273,8 @@ cal g:VeCommands.Run.Step3.Add(g:Item.New2('PathSource', 'lf'))
 cal g:VeCommands.Add(g:Item.New1('User'))
 " Execute the command for each file in the selection
 cal g:VeCommands.User.Add(g:Item.New2('ExeForEachFile', 1))
+" Double the single quotes in the paths
+cal g:VeCommands.User.Add(g:Item.New2('DblPathQuotes', 1))
 " Step1: Run on selected files {{{4
 cal g:VeCommands.User.Add(g:Item.New2('Step1', 'Run on selected files'))
 cal g:VeCommands.User.Step1.Add(g:Item.New1('Command'))
@@ -1327,7 +1351,7 @@ fu! s:OnLeave()
             return
         endif
         " Remember the cursor position before when leaving a window, this is useful when having for example two windows side-by-side to move or copy files, the position of the cursor will be remembered when leaving the window and the cursor positionned where it was when returning to the window  
-        cal s:SetCursorPos(g:VePath)
+        cal g:VeSetCursorPos(g:VePath)
     endif
 endfu
 
@@ -1376,8 +1400,10 @@ fu! g:BuildWindow(winType)
     nmap <buffer> <space>` :cal g:VeShowMarks(0)<cr>
     " <space>[ Show all marked directories sorted by directories
     nmap <buffer> <space>[ :cal g:VeShowMarks(1)<cr>
-    " <space>; Go to the history list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>; to goto the directory.)
+    " <space>; Go to the history list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>l or <enter> to goto the directory.)
     nmap <silent> <buffer> <space>; :exe 'norm gg' \| cal search('History') \| exe 'norm f['<cr>
+    " <space>: Go to the favorites list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>l or <enter>to goto the directory.)
+    nmap <silent> <buffer> <space>: :exe 'norm gg' \| cal search('Favorites') \| exe 'norm f['<cr>
     " <space>, Go to the end of the history list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>, to goto the directory.)
     nmap <silent> <buffer> <space>, :exe 'norm gg' \| cal search('History') \| exe 'norm $f[' \| norm ,<cr>
     " <space>1 Sort by name
@@ -1426,8 +1452,8 @@ fu! g:BuildWindow(winType)
     " <space>P Show current path
     nmap <silent> <buffer> <space>P :pwd<cr>
     " <space>r Run the current file or the selected files
-    nmap <silent> <buffer> <space>r :cal g:VeSelectFile('s') \| let g:VeCommandToRun = g:VeCommands.Run.Clone() \| cal g:VeRunCommand() \| let g:VeSelectedFiles = g:Item.New1('SelectedFiles')<cr>
-    vmap <silent> <buffer> <space>r :cal g:VeSelectFile('t') \| let g:VeCommandToRun = g:VeCommands.Run.Clone() \| cal g:VeRunCommand() \| let g:VeSelectedFiles = g:Item.New1('SelectedFiles')<cr>
+    nmap <silent> <buffer> <space>r :cal g:VeSelectFile('s') \| let g:VeCommandToRun = g:VeCommands.Run.Clone() \| cal g:VeRunCommand() \| let g:VeSelectedFiles = g:Item.New1('SelectedFiles') \| cal g:VeSetCursorPos(g:VePath) \| cal g:VeLs()<cr>
+    vmap <silent> <buffer> <space>r :cal g:VeSelectFile('t') \| let g:VeCommandToRun = g:VeCommands.Run.Clone() \| cal g:VeRunCommand() \| let g:VeSelectedFiles = g:Item.New1('SelectedFiles') \| cal g:VeSetCursorPos(g:VePath) \| cal g:VeLs()<cr>
     " <space>s Open the selected item (in horizontal split window)
     nmap <silent> <buffer> <space>s :cal g:VeGetPath() \| cal g:VeOpenItem('s')<cr>
     " <space>t Open current file/directory or selected files/directories in new tab
@@ -1523,44 +1549,6 @@ nmap <silent> <leader>dec :new \| cal append(0, g:VeCommands.ToXmlList())<cr>
 nmap <silent> <leader>der :new \| cal append(0, g:VeCommandToRun.ToXmlList())<cr>
 
 " Functions: Directory browsing {{{1
-
-" s:SetCursorPos(path) {{{2
-" Remember cursor position using the filename or the cursor coordinates
-" The "path" parameter indicates to which directory the cursor position is remembered, it is the key
-fu! s:SetCursorPos(path)
-    " Exit if no path, for example for the first path browse there is not path where to set cursor
-    if a:path == ''
-        return
-    endif
-    " To get the "g:VePaths.FileName" and the "g:VePathSource" {{{3
-    cal g:VeGetPath()
-    " If the key "a:path" dosen't exist {{{3
-    if g:VeCfg.CursorPos.Contains(a:path) == 0
-        " Use the filename (default value) to go to position if it is a PathSource 'd' or 'f' (directory or file) that are inside the directory listing {{{4
-        if g:VePathSource == 'd' || g:VePathSource == 'f'
-            cal g:VeCfg.CursorPos.Add(g:Item.New2(a:path, g:VePaths.FileName))
-        " Use the coordinates to go to the position if the position  {{{4
-        else
-            " A join is done to make the array into a string, not to have a string inside the object tree
-            cal g:VeCfg.CursorPos.Add(g:Item.New2(a:path, join(getpos('.'))))
-        endif
-    else " If it exists, set its value {{{3
-        " Use the filename (default value) to go to position if it is a PathSource 'd' or 'f' (directory or file) that are inside the directory listing {{{4
-        if g:VePathSource == 'd' || g:VePathSource == 'f'
-            let g:VeCfg.CursorPos[a:path].Value = g:VePaths.FileName
-        " Use the coordinates to go to the position if the position  {{{4
-        else
-            " A join is done to make the array into a string, not to have a string inside the object tree
-            let g:VeCfg.CursorPos[a:path].Value = join(getpos('.'))
-        endif
-    endif
-    " Remember the PathSource also to know how to interpret the value {{{3
-    if g:VeCfg.CursorPos[a:path].Contains('PathSource') == 0
-        cal g:VeCfg.CursorPos[a:path].Add(g:Item.New2('PathSource', g:VePathSource))
-    else
-        let g:VeCfg.CursorPos[a:path].PathSource.Value = g:VePathSource
-    endif
-endfu
 
 " s:ChangeDirectory(path) {{{2
 " Change directory
@@ -1744,6 +1732,44 @@ fu! g:VeGetPath()
     endif
 endfu
 
+" g:VeSetCursorPos(path) {{{2
+" Remember cursor position using the filename or the cursor coordinates
+" The "path" parameter indicates to which directory the cursor position is remembered, it is the key
+fu! g:VeSetCursorPos(path)
+    " Exit if no path, for example for the first path browse there is not path where to set cursor
+    if a:path == ''
+        return
+    endif
+    " To get the "g:VePaths.FileName" and the "g:VePathSource" {{{3
+    cal g:VeGetPath()
+    " If the key "a:path" dosen't exist {{{3
+    if g:VeCfg.CursorPos.Contains(a:path) == 0
+        " Use the filename (default value) to go to position if it is a PathSource 'd' or 'f' (directory or file) that are inside the directory listing {{{4
+        if g:VePathSource == 'd' || g:VePathSource == 'f'
+            cal g:VeCfg.CursorPos.Add(g:Item.New2(a:path, g:VePaths.FileName))
+        " Use the coordinates to go to the position if the position  {{{4
+        else
+            " A join is done to make the array into a string, not to have a string inside the object tree
+            cal g:VeCfg.CursorPos.Add(g:Item.New2(a:path, join(getpos('.'))))
+        endif
+    else " If it exists, set its value {{{3
+        " Use the filename (default value) to go to position if it is a PathSource 'd' or 'f' (directory or file) that are inside the directory listing {{{4
+        if g:VePathSource == 'd' || g:VePathSource == 'f'
+            let g:VeCfg.CursorPos[a:path].Value = g:VePaths.FileName
+        " Use the coordinates to go to the position if the position  {{{4
+        else
+            " A join is done to make the array into a string, not to have a string inside the object tree
+            let g:VeCfg.CursorPos[a:path].Value = join(getpos('.'))
+        endif
+    endif
+    " Remember the PathSource also to know how to interpret the value {{{3
+    if g:VeCfg.CursorPos[a:path].Contains('PathSource') == 0
+        cal g:VeCfg.CursorPos[a:path].Add(g:Item.New2('PathSource', g:VePathSource))
+    else
+        let g:VeCfg.CursorPos[a:path].PathSource.Value = g:VePathSource
+    endif
+endfu
+
 " g:VeLs() {{{2
 " List the directory
 fu! g:VeLs() 
@@ -1924,7 +1950,7 @@ fu! g:VeOpenItem(winType)
         " Don't remember the cursor's position when it is a link
         if g:VePathSource != 'lf'
             " Remember the cursor position before opening the item {{{4
-            cal s:SetCursorPos(g:VePath)
+            cal g:VeSetCursorPos(g:VePath)
         endif
         " Open in the current window {{{4
         if winType == 'e'
@@ -1951,7 +1977,7 @@ fu! g:VeDirectoryGoto(path)
     " Don't remember the cursor's position when it is a link
     if g:VePathSource != 'ld'
         " Remember the cursor position before opening the item {{{3
-        cal s:SetCursorPos(g:VePath)
+        cal g:VeSetCursorPos(g:VePath)
     endif
     " Save the bars to the config before to clear the buffer {{{3
     cal g:VeSaveBar('History')
@@ -2192,6 +2218,12 @@ fu! g:VeRunCommand()
                 " Get the path formats for the selected full path
                 let selPaths = s:GetPathFormats(g:VeSelectedFiles[selFileKey].Path.Value, g:VeSelectedFiles[selFileKey].FileName.Value)
                 for [placeholder, pathFormat] in items(selPaths)
+                    " Double the single quotes in the paths if specified {{{8
+                    if g:VeCommandToRun.Contains('DblPathQuotes') == 1
+                        if g:VeCommandToRun.DblPathQuotes.Value == 1
+                            let pathFormat = substitute(pathFormat, "'", "''", 'g')        
+                        endif
+                    endif
                     let command = substitute(command, '%Sel' . placeholder . '%', pathFormat, 'g')
                 endfor
                 " Replace the selected file "PathSource" {{{7
@@ -2200,6 +2232,12 @@ fu! g:VeRunCommand()
                 " Get the path formats for the current directory
                 let curPaths = s:GetPathFormats(g:VePath, g:VeFileName)
                 for [placeholder, pathFormat] in items(curPaths)
+                    " Double the single quotes in the paths if specified {{{8
+                    if g:VeCommandToRun.Contains('DblPathQuotes') == 1
+                        if g:VeCommandToRun.DblPathQuotes.Value == 1
+                            let pathFormat = substitute(pathFormat, "'", "''", 'g')        
+                        endif
+                    endif
                     let command = substitute(command, '%Cur' . placeholder . '%', pathFormat, 'g')
                 endfor
                 " Replace the "Step" "PathSource" {{{7
@@ -2208,7 +2246,7 @@ fu! g:VeRunCommand()
                 let command = substitute(command, '%FileLineNum%', g:VeSelectedFiles[selFileKey].FileLineNum.Value, 'g')
                 " Execute the command {{{7
                 " Leave this echo command, it shows a progression if there are many files to copy or move for example
-                "echo command
+                " echo command
                 " For now the encoding used for shell commands is 'latin1' which supports french special characters like accents, that makes it possible to run commands or copy (etc) files that have these special characters in their path. But it is not possible for now to run commands on files with other characters than included in 'latin1' encoding, like russian characters, chinese characters etc You may change the 'latin1' by something else if you wish. If I find a solution that works universally for all languages, like the use of utf-8, I will do the modification for it.
                 " Windows
                 if has('Win32')
@@ -2246,6 +2284,12 @@ fu! g:VeRunCommand()
                 let selPaths = s:GetPathFormats(g:VeSelectedFiles[selFileKey].Path.Value, g:VeSelectedFiles[selFileKey].FileName.Value)
                 " Replace the placeholder but add the same placeholder to the right of the replace value with a space between as a file separator. This new placeholder will be replaced by the next file and so on.
                 for [placeholder, pathFormat] in items(selPaths)
+                    " Double the single quotes in the paths if specified {{{6
+                    if g:VeCommandToRun.Contains('DblPathQuotes') == 1
+                        if g:VeCommandToRun.DblPathQuotes.Value == 1
+                            let pathFormat = substitute(pathFormat, "'", "''", 'g')        
+                        endif
+                    endif
                     let command = substitute(command, '%Sel' . placeholder . '%', pathFormat . ' %Sel' . placeholder . '%', '')
                 endfor
                 " Replace the current directory placeholders {{{5
@@ -2253,6 +2297,12 @@ fu! g:VeRunCommand()
                 let curPaths = s:GetPathFormats(g:VePath, g:VeFileName)
                 " Replace the placeholder but add the same placeholder to the right of the replace value with a space between as a file separator. This new placeholder will be replaced by the next file and so on.
                 for [placeholder, pathFormat] in items(curPaths)
+                    " Double the single quotes in the paths if specified {{{6
+                    if g:VeCommandToRun.Contains('DblPathQuotes') == 1
+                        if g:VeCommandToRun.DblPathQuotes.Value == 1
+                            let pathFormat = substitute(pathFormat, "'", "''", 'g')        
+                        endif
+                    endif
                     let command = substitute(command, '%Cur' . placeholder . '%', pathFormat . ' %Cur' . placeholder . '%', '')
                 endfor
                 " Replace the selected file "PathSource" {{{4

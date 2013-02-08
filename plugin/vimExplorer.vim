@@ -422,8 +422,8 @@ endfunction
 " Documentation {{{1
 
 " Name: vimExplorer.vim
-" Version: 2.5
-" Description: Explore directories quickly and operate on files.
+" Version: 2.5.1
+" Description: File manager. Explore directories quickly and operate on files.
 " Author: Alexandre Viau (alexandreviau@gmail.com)
 " Website: The latest version is found on "vim.org"
 "
@@ -737,6 +737,7 @@ endfunction
 " - Maybe eventually, if it would proove to be better, to replace the ls command by the glob() function and use more the other file functions found in function-list like getftype() for example...but I'd say that ls is faster than glob and that it has dates, sorts etc
 " - For now the encoding used for shell commands is 'latin1' which supports french special characters like accents, that makes it possible to run commands or copy (etc) files that have these special characters in their path. But it is not possible for now to run commands on files with other characters than included in 'latin1' encoding, like russian characters, chinese characters etc You may change the 'latin1' by something else if you wish by searching 'latin1' in the code. If I find a solution that works universally for all languages, like the use of utf-8, I will do the modification for it.
 " New features {{{3
+" - Maybe add run (<space>r) to grep results?
 " - Add commands to copy files, move files etc that can be used from command line and call these from the mappings
 " - Add a bar for recent files: (see Mru plugin how its done, maybe use an autocommand on "bufopen") and add to g:VeCfg
 " - Add a bar for buffers opened: list buffers (see vimrc <tab>b, add maybe mapping for close buffer maybe so a buffer "link" may be closed
@@ -839,6 +840,8 @@ endfunction
 " - Correction to the <space>r command (run selected files) which was not keeping cursor position and also there was a bug when running multiple files, the reinitialization was in the command step so reinitializing the selected file list after running the first command, but now it is reinitialized after the call to g:VeRunCommand(), also the set cursor position is set before doing a call to g:VeLs() after the call to g:VeRunCommand()
 " - Added <space>: To go to the favorites list (then do ; or , (from the vim 'f' command) to move forward and backward from one path to another, then when on the desired path, do <space>l or <enter>to goto the directory.)
 " - Corrected copy, move, delete, run etc commands by doubling the quotes found in the paths, because the command is delimited by single quotes, they had to be doubled or a error was occuring if the path contained single quotes.
+" 2.5.1 {{{3
+" - Small correction with opening grep results in new tab when there is a single quote (or several) somewhere in the path
 "
 " Variables: Plugin {{{1
 
@@ -1210,12 +1213,12 @@ cal g:VeCommands.OpenInNewTab.Step4.Add(g:Item.New2('PathSource', 'rd'))
 " Step5: Open grep file results in new tab {{{3
 " NOTE: When opening grep results in new tabs, the g:VeCommandToRun object is used to open the selected files, so the previous g:veCommandToRun which contained the grep command results is replaced by the OpenInNewTab command, that is why when returning to the VimExplorer window after viewing executing this OpenInNewTab on grep results command the previous grep results are not there anymore. This is somehow a limitation, to overcome this there could be an array of g:VeCommandToRun for example, but for now to leave it like this. 
 cal g:VeCommands.OpenInNewTab.Add(g:Item.New2('Step5', 'Open grep file results in new tab'))
-cal g:VeCommands.OpenInNewTab.Step5.Add(g:Item.New2('Command', "exe 'tabe +%FileLineNum% %SelFullPathS%'"))
+cal g:VeCommands.OpenInNewTab.Step5.Add(g:Item.New2('Command', 'exe "tabe +%FileLineNum% %SelFullPathS%"'))
 cal g:VeCommands.OpenInNewTab.Step5.Add(g:Item.New2('PathSource', 'gf'))
 " Step6: Open grep directory results in new tab {{{3
 " NOTE: When opening grep results in new tabs, the g:VeCommandToRun object is used to open the selected files, so the previous g:veCommandToRun which contained the grep command results is replaced by the OpenInNewTab command, that is why when returning to the VimExplorer window after viewing executing this OpenInNewTab on grep results command the previous grep results are not there anymore. This is somehow a limitation, to overcome this there could be an array of g:VeCommandToRun for example, but for now to leave it like this. 
 cal g:VeCommands.OpenInNewTab.Add(g:Item.New2('Step6', 'Open grep directory results in new tab'))
-cal g:VeCommands.OpenInNewTab.Step6.Add(g:Item.New2('Command', "exe 'tabe +%FileLineNum% %SelFullPathS%'"))
+cal g:VeCommands.OpenInNewTab.Step6.Add(g:Item.New2('Command', 'exe "tabe +%FileLineNum% %SelFullPathS%"'))
 cal g:VeCommands.OpenInNewTab.Step6.Add(g:Item.New2('PathSource', 'gd'))
 " Step7: Open link bar files in new tab {{{3
 cal g:VeCommands.OpenInNewTab.Add(g:Item.New2('Step7', 'Open link bar files in new tab'))
@@ -2246,7 +2249,7 @@ fu! g:VeRunCommand()
                 let command = substitute(command, '%FileLineNum%', g:VeSelectedFiles[selFileKey].FileLineNum.Value, 'g')
                 " Execute the command {{{7
                 " Leave this echo command, it shows a progression if there are many files to copy or move for example
-                " echo command
+                echo command
                 " For now the encoding used for shell commands is 'latin1' which supports french special characters like accents, that makes it possible to run commands or copy (etc) files that have these special characters in their path. But it is not possible for now to run commands on files with other characters than included in 'latin1' encoding, like russian characters, chinese characters etc You may change the 'latin1' by something else if you wish. If I find a solution that works universally for all languages, like the use of utf-8, I will do the modification for it.
                 " Windows
                 if has('Win32')

@@ -422,7 +422,7 @@ endfunction
 " Documentation {{{1
 
 " Name: vimExplorer.vim
-" Version: 2.5.1
+" Version: 2.5.2
 " Description: File manager. Explore directories quickly and operate on files.
 " Author: Alexandre Viau (alexandreviau@gmail.com)
 " Website: The latest version is found on "vim.org"
@@ -842,6 +842,8 @@ endfunction
 " - Corrected copy, move, delete, run etc commands by doubling the quotes found in the paths, because the command is delimited by single quotes, they had to be doubled or a error was occuring if the path contained single quotes.
 " 2.5.1 {{{3
 " - Small correction with opening grep results in new tab when there is a single quote (or several) somewhere in the path
+" 2.5.2 {{{3
+" - I removed a echo placed for debugging purposes that caused the "press any key" message to show
 "
 " Variables: Plugin {{{1
 
@@ -2249,7 +2251,7 @@ fu! g:VeRunCommand()
                 let command = substitute(command, '%FileLineNum%', g:VeSelectedFiles[selFileKey].FileLineNum.Value, 'g')
                 " Execute the command {{{7
                 " Leave this echo command, it shows a progression if there are many files to copy or move for example
-                echo command
+                " echo command
                 " For now the encoding used for shell commands is 'latin1' which supports french special characters like accents, that makes it possible to run commands or copy (etc) files that have these special characters in their path. But it is not possible for now to run commands on files with other characters than included in 'latin1' encoding, like russian characters, chinese characters etc You may change the 'latin1' by something else if you wish. If I find a solution that works universally for all languages, like the use of utf-8, I will do the modification for it.
                 " Windows
                 if has('Win32')

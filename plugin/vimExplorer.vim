@@ -1,5 +1,7 @@
 " The vimExplorer.vim plugin code is following this code inserted here from the basicXmlParser.vim plugin
 " The basicXmlParser.vim plugin is added here before the vimExplorer.vim plugin to ensure compatibility. But it is available also as a separate plugin. If you have basicXmlParser.xml plugin in your plugin directory, you should remove it or it may conflict with this version.
+" <url:vimscript:!c:\\usb\\i_green\\apps\\ctags.exe --recurse -f c:\\temp\\vimExplorer.tags --extra=+fq --fields=+ianmzS --vim-kinds=acfmv c:\\vim\\vim73\\plugin\\vimExplorer.vim>
+" <url:vimscript:set tag=c:/temp/vimExplorer.tags> " Make vim aware of our tag file. 
 " Documentation {{{1
 "
 " Name: basicXmlParser.vim
@@ -422,7 +424,7 @@ endfunction
 " Documentation {{{1
 
 " Name: vimExplorer.vim
-" Version: 2.5.2
+" Version: 2.5.3
 " Description: File manager. Explore directories quickly and operate on files.
 " Author: Alexandre Viau (alexandreviau@gmail.com)
 " Website: The latest version is found on "vim.org"
@@ -721,13 +723,13 @@ endfunction
 " Code organization {{{3
 " - Check if g:VeFileName occurences really could not be replaced by g:VePaths.FileName
 " - Maybe modify the function folds to do like this: fu! g:VeGotoMark(mark) " {{2 instead of adding the full function name in comments above the function itself, thus if the parameter changed, I will not have to change the comment also.
-" - There was a some kind of bug in the g:VeLs() function, that the clear buffer statement was copying all the buffer into the paste register. I backed up the paste register before to execute that statement with 'let tmpReg = @"' then set back the paste buffer. To find a better solution when I have time. Here below is that code to do a better clear buffer:
-"       let tmpReg = @"
-"       norm ggVGd
-"       let @" = tmpReg
 " Documentation {{{3
 " - Add documentation about user-defined commands
 " Improvements to current features {{{3
+" - Add clone directory
+" - The <space>o (reload) should remember the cursor position before to redo a g:VeLs()
+" - The <space>R (rename) if an accent is added to the filename in the command line, then it is not the accent that appears in the filename once the rename is done but something else due to an encoding issue
+" - History should not be completely cleared (deleted) when the maximum length is attained, but it should be cut at the end to be less than the maximum
 " - 07.02.2013 23:15:42 (×ò) The favorites should not contain links in double
 " - The filter dosen't work after a recursive listing example <space>L on c:\temp then do "f" *.vim, only the current dir will be filtered, this is maybe because the results of a recursive listing are kept in memory when a directory dosen't change but an operation is done on it. To filter recursive results would be some kind of way of searching for files... maybe to refresh directory if a filter is done but to use memorized recursive listing for other operations...
 " - Add pathsources that the user commands can be run onto
@@ -742,10 +744,12 @@ endfunction
 " - Add a bar for recent files: (see Mru plugin how its done, maybe use an autocommand on "bufopen") and add to g:VeCfg
 " - Add a bar for buffers opened: list buffers (see vimrc <tab>b, add maybe mapping for close buffer maybe so a buffer "link" may be closed
 " - Maybe add a function to collect words or strings from selected files, use the collect function from my vimrc and add a collect command
-"
+" - 11.02.2013 19:04:03 (Ïí) Add clone of files links in favorites
+" - 11.02.2013 19:04:20 (Ïí) Add feature to go to the directory of a file in the favorites and to position the cursor to that file
 " Bugs {{{2
-" - 07.02.2013 23:15:49 (×ò) There seems to be a problem when doing <space>r on a file with apostrophes (') in the path
-" - 07.02.2013 23:15:51 (×ò) Cannot copy a file to a directory where there is a (') in the path (check also for move and other operations like delete etc which dosen't work when there is apostrophe), the solution I have is to add "cal g:VeCommands.Copy.Add(g:Item.New2('DblPathQuotes', 1))" to the command that need the quotes to be doubled, and continue in the g:VeRunCommand() function to add conditions to double the quotes (see where I use that variable DblPathQuotes in g:VeRunCommand(), make it work for exerunfiles 1 et 0)
+" - It seems again sometimes the content of a vimexplorer window is copied to the clipboard (see clear window before VeLs())
+" - After starting vim and opening vimexplorer for first time, using a mark (example 'd to go to documents) there is the error: error detected ... g:VeLs: line 122 E33: No previous substitute regular expression
+" - 23.02.2013 23:22:19 (Ñá) ctrl-u presse 2 fois fait un : dans le command line et non un 1/2 page up dans vim
 " - Sometimes there is garbage from copy/paste registers that come to replace the favorites in the favorites bar...I don't know what happen there.
 " - When opening grep results in new tabs, the g:VeCommandToRun object is used to open the selected files, so the previous g:veCommandToRun which contained the grep command results is replaced by the OpenInNewTab command, that is why when returning to the VimExplorer window after viewing executing this OpenInNewTab on grep results command the previous grep results are not there anymore. This is somehow a limitation, to overcome this there could be an array of g:VeCommandToRun for example, but for now to leave it like this. 
 " - When selected files from a recursive listing, if the same filenames appear in other subdirs they are also highlighted (but not added to selection) this is because the highlight is based on the filename... I'm not sure there may be a simple solution to this
@@ -844,6 +848,8 @@ endfunction
 " - Small correction with opening grep results in new tab when there is a single quote (or several) somewhere in the path
 " 2.5.2 {{{3
 " - I removed a echo placed for debugging purposes that caused the "press any key" message to show
+" 2.5.3 {{{3
+" - I changed the commands to clear the buffer in the g:VeLs() function to send the deleted content to the black hole register instead of the paste register which was backed up to a temporary variable and reset after.
 "
 " Variables: Plugin {{{1
 
@@ -1786,10 +1792,8 @@ fu! g:VeLs()
         " Reinitialize the subdirectories listing part
         let g:VeRecursiveData = []
     endif
-    " Clear buffer {{{3
-    let tmpReg = @"
-    norm ggVGd
-    let @" = tmpReg
+    " Clear buffer
+    norm gg"_dG
     " List the directory {{{3
     " If not root path c:\ or another root, add quotes. Root path quoted ("c:\") will give an error. 
     " Or if there is a filter, then don't put quotes, quotes don't work in a filter
